@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https: data:; connect-src https:;">
+  <title>New Tab — BatBrowser</title>
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <style>
+    /* ─── Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    /* ─── Animated background ─────────────────────────────────── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Subtle mesh gradient orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0;
+      animation: orb-float linear infinite;
+    }
+
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,212,180,0.08), transparent 70%);
+      top: -100px; left: -80px;
+      animation-duration: 14s;
+      animation-delay: 0s;
+      opacity: 1;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(91,142,240,0.06), transparent 70%);
+      bottom: -80px; right: -60px;
+      animation-duration: 18s;
+      animation-delay: -6s;
+      opacity: 1;
+    }
+    .orb-3 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(0,212,180,0.05), transparent 70%);
+      top: 40%; right: 20%;
+      animation-duration: 22s;
+      animation-delay: -10s;
+      opacity: 1;
+    }
+
+    @keyframes orb-float {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(24px, -18px) scale(1.04); }
+      66%  { transform: translate(-14px, 12px) scale(0.97); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+
+    /* ─── Main content wrapper ─────────────────────────────── */
+    .page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-12);
+      position: relative;
+      z-index: 1;
+      padding: var(--space-16) var(--space-12);
+    }
+
+    /* ─── Logo + Clock ─────────────────────────────────────── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-8);
+      animation: hero-in 0.7s var(--ease-out) both;
+    }
+
+    @keyframes hero-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Animated bat logo */
+    .bat-hero {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bat-glow {
+      position: absolute;
+      width: 120px;
+      height: 72px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(0,212,180,0.18) 0%, transparent 70%);
+      filter: blur(12px);
+      animation: glow-pulse 3s var(--ease) infinite;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { transform: scale(1);    opacity: 0.6; }
+      50%       { transform: scale(1.18); opacity: 1; }
+    }
+
+    .bat-svg {
+      width: 72px;
+      height: 43px;
+      fill: var(--accent);
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 0 2px rgba(0,212,180,0.2));
+      animation: bat-breathe 3s var(--ease) infinite;
+    }
+
+    @keyframes bat-breathe {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(0,212,180,0.2)); }
+      50%       { filter: drop-shadow(0 0 12px rgba(0,212,180,0.45)); }
+    }
+
+    /* Shimmer sweep on the bat */
+    .bat-shimmer-mask {
+      position: absolute;
+      inset: -4px;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
+    .bat-shimmer {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+      animation: shimmer-sweep 3.5s var(--ease) infinite;
+      animation-delay: 1.5s;
+    }
+
+    @keyframes shimmer-sweep {
+      from { left: -40px; }
+      to   { left: calc(100% + 40px); }
+    }
+
+    /* Clock */
+    .clock-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .clock {
+      font-size: var(--text-hero);
+      font-weight: var(--weight-light);
+      letter-spacing: var(--tracking-tighter);
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: var(--leading-none);
+    }
+
+    .clock-ampm {
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-light);
+      color: var(--text-muted);
+      margin-left: var(--space-4);
+      letter-spacing: normal;
+    }
+
+    .date {
+      font-size: var(--text-md);
+      color: var(--text-secondary);
+      font-weight: var(--weight-normal);
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .greeting {
+      font-size: var(--text-lg);
+      color: var(--text-muted);
+      font-weight: var(--weight-light);
+      letter-spacing: 0.01em;
+    }
+
+    /* ─── Search ───────────────────────────────────────────── */
+    .search-section {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      animation: hero-in 0.7s var(--ease-out) 0.12s both;
+    }
+
+    .search-bar {
+      position: relative;
+    }
+
+    .search-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      background: var(--surface-1);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      height: 54px;
+      padding: 0 var(--space-8) 0 var(--space-6);
+      transition:
+        border-color 0.2s var(--ease),
+        box-shadow 0.2s var(--ease),
+        background 0.2s var(--ease);
+      cursor: text;
+    }
+
+    .search-inner:focus-within {
+      border-color: var(--accent-ring);
+      box-shadow: 0 0 0 3px var(--accent-dim), var(--shadow-accent);
+      background: var(--surface-2);
+    }
+
+    .search-icon {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-muted);
+      flex-shrink: 0;
+      transition: fill 0.2s;
+    }
+
+    .search-inner:focus-within .search-icon {
+      fill: var(--accent);
+    }
+
+    #search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: var(--text-lg);
+      font-family: var(--font-sans);
+      font-weight: var(--weight-normal);
+      caret-color: var(--accent);
+    }
+
+    #search-input::placeholder { color: var(--text-muted); }
+
+    .engine-badge {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      color: var(--text-muted);
+      background: var(--surface-hover);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+      letter-spacing: var(--tracking-wide);
+      transition: color 0.2s, background 0.2s;
+    }
+
+    /* Search suggestions */
+    #search-suggestions {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0; right: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      display: none;
+      z-index: 100;
+      box-shadow: var(--shadow-xl);
+      animation: sug-in 0.15s var(--ease-out);
+    }
+
+    #search-suggestions.visible { display: block; }
+
+    @keyframes sug-in {
+      from { opacity: 0; transform: translateY(-4px) scale(0.99); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .sug-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-6);
+      font-size: var(--text-md);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.08s;
+    }
+    .sug-item:hover, .sug-item.active { background: var(--surface-hover); }
+    .sug-item svg { width: 16px; height: 16px; fill: var(--text-muted); flex-shrink: 0; }
+    .sug-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ─── Quick Links ──────────────────────────────────────── */
+    .shortcuts-section {
+      width: 100%;
+      max-width: 640px;
+      animation: hero-in 0.7s var(--ease-out) 0.22s both;
+    }
+
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-4);
+    }
+
+    .shortcut {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-5) var(--space-2);
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-medium);
+      transition:
+        background 0.14s var(--ease),
+        border-color 0.14s var(--ease),
+        transform 0.18s var(--ease-spring),
+        box-shadow 0.14s var(--ease),
+        color 0.14s var(--ease);
+      user-select: none;
+    }
+
+    .shortcut:hover {
+      background: var(--surface-2);
+      border-color: var(--border);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md), 0 0 0 1px var(--border);
+      color: var(--text);
+    }
+
+    .shortcut:active {
+      transform: translateY(-1px) scale(0.97);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shortcut-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-lg);
+      background: var(--surface-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 20px;
+      font-weight: var(--weight-semibold);
+      transition: background 0.14s;
+    }
+
+    .shortcut:hover .shortcut-icon {
+      background: var(--surface-active);
+    }
+
+    .shortcut-icon img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .shortcut-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      text-align: center;
+      font-size: var(--text-xs);
+    }
+
+    /* ─── Stats bar ────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      animation: hero-in 0.7s var(--ease-out) 0.35s both;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .stat svg {
+      width: 13px;
+      height: 13px;
+      fill: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .stat-value {
+      font-weight: var(--weight-semibold);
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Bottom bar ───────────────────────────────────────── */
+    .bottom-bar {
+      position: absolute;
+      bottom: var(--space-8);
+      right: var(--space-10);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    /* ─── Context menu for shortcuts ───────────────────────── */
+    .sc-menu {
+      position: fixed;
+      z-index: 200;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: var(--space-2) 0;
+      min-width: 160px;
+      display: none;
+    }
+    .sc-menu.open { display: block; animation: sug-in 0.12s var(--ease-out); }
+    .sc-menu-item {
+      padding: var(--space-3) var(--space-5);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.07s;
+    }
+    .sc-menu-item:hover { background: var(--surface-hover); color: var(--text); }
+    .sc-menu-item.danger { color: var(--danger); }
+    .sc-menu-item.danger:hover { background: var(--danger-dim); }
+  </style>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Main content -->
+<div class="page">
+
+  <!-- Hero: Logo + Clock -->
+  <div class="hero">
+    <div class="bat-hero">
+      <div class="bat-glow"></div>
+      <!-- BatBrowser canonical logo — DO NOT modify path -->
+      <svg class="bat-svg" viewBox="0 0 200 120" aria-label="BatBrowser">
+        <path d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"/>
+      </svg>
+      <div class="bat-shimmer-mask">
+        <div class="bat-shimmer"></div>
+      </div>
+    </div>
+
+    <div class="clock-wrap">
+      <div class="clock" id="clock">
+        <span id="clock-time">12:00</span><span class="clock-ampm" id="clock-ampm">AM</span>
+      </div>
+      <div class="date" id="date">Loading…</div>
+      <div class="greeting" id="greeting">Welcome</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-section">
+    <div class="search-bar">
+      <div class="search-inner">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search the web or type a URL"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+          aria-label="Search"
+        >
+        <span class="engine-badge" id="engine-badge">Google</span>
+      </div>
+      <div id="search-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- Quick links / Shortcuts -->
+  <div class="shortcuts-section">
+    <div class="shortcuts-grid" id="shortcuts-grid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4.9l5 2.22v3.88c0 3.65-2.37 6.74-5 7.78-2.63-1.04-5-4.13-5-7.78V7.12l5-2.22z"/>
+      </svg>
+      <span><span class="stat-value" id="ads-count">0</span> trackers blocked</span>
+    </div>
+    <div class="stat">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 15H11v-6h1.5v6zm0-8H11V7h1.5v2z"/>
+      </svg>
+      <span>Session: <span class="stat-value" id="session-time">just started</span></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Shortcut context menu -->
+<div class="sc-menu" id="sc-menu">
+  <div class="sc-menu-item" id="sc-open">Open</div>
+  <div class="sc-menu-item" id="sc-new-tab">Open in new tab</div>
+  <div class="sc-menu-item danger" id="sc-remove">Remove</div>
+</div>
+
+<!-- Bottom watermark -->
+<div class="bottom-bar">BatBrowser</div>
+
+<script>
+'use strict';
+
+const bb = window.batBrowser;
+
+// ─── Clock ─────────────────────────────────────────────────────
+const clockTimeEl = document.getElementById('clock-time');
+const clockAmpmEl = document.getElementById('clock-ampm');
+const dateEl      = document.getElementById('date');
+const greetingEl  = document.getElementById('greeting');
+
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function getGreeting(h) {
+  if (h < 5)  return 'Good night 🌙';
+  if (h < 12) return 'Good morning ☀️';
+  if (h < 17) return 'Good afternoon 🌤';
+  if (h < 21) return 'Good evening 🌆';
+  return 'Good night 🌙';
+}
+
+function updateClock() {
+  const now  = new Date();
+  const h    = now.getHours();
+  const m    = now.getMinutes().toString().padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+
+  clockTimeEl.textContent = `${h12}:${m}`;
+  clockAmpmEl.textContent = ampm;
+  dateEl.textContent = `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+  greetingEl.textContent = getGreeting(h);
+}
+
+updateClock();
+setInterval(updateClock, 15_000);
+
+// ─── Session timer ───────────────────────────────────────────
+const sessionStart = Date.now();
+const sessionEl = document.getElementById('session-time');
+
+function updateSession() {
+  const secs = Math.floor((Date.now() - sessionStart) / 1000);
+  if (secs < 60)  { sessionEl.textContent = 'just started'; return; }
+  const m = Math.floor(secs / 60);
+  if (m < 60)     { sessionEl.textContent = `${m}m`; return; }
+  const hh = Math.floor(m / 60);
+  const mm = m % 60;
+  sessionEl.textContent = `${hh}h ${mm}m`;
+}
+setInterval(updateSession, 60_000);
+
+// ─── Settings & Theme ────────────────────────────────────────
+let engineId = 'google';
+const engineNames = {
+  google: 'Google', bing: 'Bing', duckduckgo: 'DuckDuckGo', brave: 'Brave', ecosia: 'Ecosia'
+};
+const engineBadge = document.getElementById('engine-badge');
+
+if (bb) {
+  bb.settings.get().then(settings => {
+    if (!settings) return;
+    engineId = settings.searchEngine || 'google';
+    engineBadge.textContent = engineNames[engineId] || 'Google';
+
+    let theme = settings.theme || 'dark';
+    if (theme === 'system') {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.dataset.theme = theme;
+    if (settings.accentColor) {
+      document.documentElement.style.setProperty('--accent', settings.accentColor);
+    }
+  });
+
+  bb.adblock.getStats().then(stats => {
+    if (stats) updateAdStats(stats);
+  });
+
+  bb.onAdBlockStats(stats => {
+    if (stats) updateAdStats(stats);
+  });
+}
+
+function updateAdStats(stats) {
+  const total = (stats.ads || 0) + (stats.trackers || 0);
+  document.getElementById('ads-count').textContent = total.toLocaleString();
+}
+
+// ─── Search ──────────────────────────────────────────────────
+const searchInput = document.getElementById('search-input');
+const searchSugs  = document.getElementById('search-suggestions');
+let currentFocus = -1;
+let debounce;
+
+const SEARCH_URLS = {
+  google:     q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  bing:       q => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  duckduckgo: q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  brave:      q => `https://search.brave.com/search?q=${encodeURIComponent(q)}`,
+  ecosia:     q => `https://www.ecosia.org/search?q=${encodeURIComponent(q)}`,
+};
+
+function navigate(query) {
+  if (!query.trim()) return;
+  if (bb) { bb.nav.go(query); return; }
+  const isUrl = /^https?:\/\//i.test(query) || /^www\./i.test(query);
+  if (isUrl) { window.location.href = query.startsWith('http') ? query : 'https://' + query; return; }
+  const fn = SEARCH_URLS[engineId] || SEARCH_URLS.google;
+  window.location.href = fn(query);
+}
+
+function setSugsVisible(v) {
+  searchSugs.classList.toggle('visible', v);
+  if (!v) currentFocus = -1;
+}
+
+searchInput.addEventListener('input', e => {
+  clearTimeout(debounce);
+  const q = e.target.value.trim();
+  if (!q) { setSugsVisible(false); return; }
+  debounce = setTimeout(async () => {
+    try {
+      let items = [];
+      if (bb) items = await bb.suggestions.get(q);
+      if (!items || items.length === 0) { setSugsVisible(false); return; }
+      renderSugs(items.slice(0, 8));
+    } catch { setSugsVisible(false); }
+  }, 120);
+});
+
+function renderSugs(items) {
+  searchSugs.innerHTML = '';
+  items.forEach((text, i) => {
+    const div = document.createElement('div');
+    div.className = 'sug-item';
+    div.dataset.index = i;
+    div.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <span class="sug-text"></span>
+    `;
+    div.querySelector('.sug-text').textContent = text;
+    div.addEventListener('mousedown', e => { e.preventDefault(); navigate(text); setSugsVisible(false); });
+    searchSugs.appendChild(div);
+  });
+  setSugsVisible(true);
+}
+
+searchInput.addEventListener('keydown', e => {
+  const items = searchSugs.querySelectorAll('.sug-item');
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const focused = items[currentFocus];
+    navigate(focused ? focused.querySelector('.sug-text').textContent : searchInput.value);
+    setSugsVisible(false);
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    currentFocus = Math.min(currentFocus + 1, items.length - 1);
+    updateFocus(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    currentFocus = Math.max(currentFocus - 1, -1);
+    updateFocus(items);
+  } else if (e.key === 'Escape') {
+    setSugsVisible(false);
+  }
+});
+
+function updateFocus(items) {
+  items.forEach((el, i) => {
+    el.classList.toggle('active', i === currentFocus);
+    if (i === currentFocus) searchInput.value = el.querySelector('.sug-text').textContent;
+  });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-bar')) setSugsVisible(false);
+});
+
+// ─── Shortcuts ───────────────────────────────────────────────
+const DEFAULT_SHORTCUTS = [
+  { name: 'YouTube',   url: 'https://www.youtube.com',   color: '#ff0000' },
+  { name: 'GitHub',    url: 'https://github.com',        color: '#333' },
+  { name: 'Reddit',    url: 'https://www.reddit.com',    color: '#ff4500' },
+  { name: 'Discord',   url: 'https://discord.com',       color: '#5865f2' },
+  { name: 'ChatGPT',   url: 'https://chat.openai.com',   color: '#00a67e' },
+  { name: 'Gmail',     url: 'https://mail.google.com',   color: '#ea4335' },
+  { name: 'X',         url: 'https://x.com',             color: '#000' },
+  { name: 'Wikipedia', url: 'https://wikipedia.org',     color: '#2a4b8d' },
+  { name: 'Netflix',   url: 'https://netflix.com',       color: '#e50914' },
+  { name: 'Google',    url: 'https://www.google.com',    color: '#4285f4' },
+];
+
+let shortcuts = [...DEFAULT_SHORTCUTS];
+let contextTarget = null;
+
+function getFavicon(url) {
+  try {
+    const u = new URL(url);
+    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=48`;
+  } catch { return ''; }
+}
+
+function renderShortcuts() {
+  const grid = document.getElementById('shortcuts-grid');
+  grid.innerHTML = '';
+  shortcuts.forEach((sc, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'shortcut';
+    btn.tabIndex = 0;
+    btn.title = sc.name;
+    btn.setAttribute('role', 'link');
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'shortcut-icon';
+
+    const img = document.createElement('img');
+    img.src = getFavicon(sc.url);
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => {
+      img.remove();
+      iconDiv.style.background = sc.color || 'var(--accent-dim)';
+      iconDiv.style.color = '#fff';
+      iconDiv.textContent = sc.name.charAt(0).toUpperCase();
+    };
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'shortcut-name';
+    nameDiv.textContent = sc.name;
+
+    iconDiv.appendChild(img);
+    btn.appendChild(iconDiv);
+    btn.appendChild(nameDiv);
+
+    btn.addEventListener('click', () => {
+      if (bb) bb.nav.go(sc.url);
+      else window.location.href = sc.url;
+    });
+
+    btn.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      contextTarget = idx;
+      const menu = document.getElementById('sc-menu');
+      menu.classList.add('open');
+      menu.style.left = e.clientX + 'px';
+      menu.style.top  = e.clientY + 'px';
+    });
+
+    grid.appendChild(btn);
+  });
+}
+
+renderShortcuts();
+
+// Context menu
+const scMenu = document.getElementById('sc-menu');
+
+document.getElementById('sc-open').addEventListener('click', () => {
+  if (contextTarget !== null) {
+    const sc = shortcuts[contextTarget];
+    if (sc) { if (bb) bb.nav.go(sc.url); else window.location.href = sc.url; }
+  }
+  scMenu.classList.remove('open');
+});
+
+document.getElementById('sc-new-tab').addEventListener('click', () => {
+  if (contextTarget !== null) {
+    const sc = shortcuts[contextTarget];
+    if (sc && bb) bb.tab.create(sc.url);
+  }
+  scMenu.classList.remove('open');
+});
+
+document.getElementById('sc-remove').addEventListener('click', () => {
+  if (contextTarget !== null) {
+    shortcuts.splice(contextTarget, 1);
+    renderShortcuts();
+  }
+  scMenu.classList.remove('open');
+  contextTarget = null;
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sc-menu')) scMenu.classList.remove('open');
+});
+</script>
+</body>
+</html>

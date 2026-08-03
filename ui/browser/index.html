@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080A0F">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https: data:;">
+  <title>BatBrowser</title>
+  <link rel="icon" type="image/svg+xml" href="../shared/logo-favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SIDEBAR RAIL — Always-visible 52px icon strip on the left
+       ═══════════════════════════════════════════════════════════ -->
+  <aside id="sidebar-rail" aria-label="Sidebar navigation">
+
+    <!-- Logo / Home -->
+    <div id="rail-logo" title="BatBrowser" aria-label="BatBrowser home" role="button" tabindex="0">
+      <svg class="bat-logo" viewBox="0 0 200 120" aria-hidden="true">
+        <path d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"/>
+      </svg>
+    </div>
+
+    <!-- Rail divider -->
+    <div class="rail-divider"></div>
+
+    <!-- Navigation icons -->
+    <nav id="rail-nav" aria-label="Sidebar panels">
+
+      <button class="rail-btn" id="rail-bookmarks" data-panel="bookmarks"
+        title="Bookmarks (Ctrl+B)" aria-label="Bookmarks" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+        </svg>
+        <span class="rail-tooltip">Bookmarks</span>
+      </button>
+
+      <button class="rail-btn" id="rail-history" data-panel="history"
+        title="History (Ctrl+H)" aria-label="History" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/>
+        </svg>
+        <span class="rail-tooltip">History</span>
+      </button>
+
+      <button class="rail-btn" id="rail-downloads" data-panel="downloads"
+        title="Downloads (Ctrl+J)" aria-label="Downloads" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
+        </svg>
+        <span class="rail-tooltip">Downloads</span>
+        <span class="rail-badge" id="downloads-rail-badge" aria-hidden="true"></span>
+      </button>
+
+    </nav>
+
+    <!-- Bottom rail items -->
+    <div id="rail-bottom">
+
+      <button class="rail-btn" id="rail-shield"
+        title="Privacy Shield" aria-label="Privacy shield" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4.9l5 2.22v3.88c0 3.65-2.37 6.74-5 7.78-2.63-1.04-5-4.13-5-7.78V7.12l5-2.22z"/>
+        </svg>
+        <span class="rail-badge rail-badge--accent" id="adblock-rail-badge" aria-live="polite"></span>
+        <span class="rail-tooltip">Ad Blocker</span>
+      </button>
+
+      <button class="rail-btn" id="rail-settings"
+        title="Settings (Ctrl+,)" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+        </svg>
+        <span class="rail-tooltip">Settings</span>
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SIDEBAR PANEL — Expandable panel next to the rail
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="sidebar-panel" aria-label="Sidebar panel" role="complementary">
+    <div id="sidebar-panel-header">
+      <h2 id="sidebar-panel-title">Bookmarks</h2>
+      <button id="sidebar-panel-close" aria-label="Close panel" title="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+    <div id="sidebar-panel-body">
+      <div class="sidebar-pane" id="sidebar-pane-bookmarks" role="region" aria-label="Bookmarks"></div>
+      <div class="sidebar-pane" id="sidebar-pane-history"   role="region" aria-label="History"></div>
+      <div class="sidebar-pane" id="sidebar-pane-downloads" role="region" aria-label="Downloads"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CHROME — Titlebar + Toolbar + Tab Bar
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="chrome">
+
+    <!-- ── TITLEBAR ──────────────────────────────────────────── -->
+    <div id="titlebar">
+      <!-- Drag region fills all space not taken by window controls -->
+      <div id="titlebar-drag" aria-hidden="true"></div>
+
+      <!-- Window control buttons -->
+      <div id="win-controls" role="group" aria-label="Window controls">
+        <button class="win-btn" id="min-btn"
+          title="Minimize" aria-label="Minimize window">
+          <svg viewBox="0 0 10 1" aria-hidden="true">
+            <rect width="10" height="1" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="win-btn" id="max-btn"
+          title="Maximize" aria-label="Maximize window">
+          <svg viewBox="0 0 10 10" id="max-icon-maximize" aria-hidden="true">
+            <rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/>
+          </svg>
+          <svg viewBox="0 0 10 10" id="max-icon-restore" style="display:none" aria-hidden="true">
+            <path d="M2,0 L10,0 L10,8 M0,2 L8,2 L8,10 L0,10 Z" fill="none" stroke="currentColor" stroke-width="1"/>
+          </svg>
+        </button>
+        <button class="win-btn close" id="close-btn"
+          title="Close" aria-label="Close window">
+          <svg viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M0,0 L10,10 M10,0 L0,10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── TOOLBAR ───────────────────────────────────────────── -->
+    <div id="toolbar">
+
+      <!-- Navigation -->
+      <div id="nav-btns" role="group" aria-label="Navigation">
+        <button class="nav-btn" id="back-btn"
+          title="Back (Alt+Left)" aria-label="Go back" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/>
+          </svg>
+        </button>
+        <button class="nav-btn" id="forward-btn"
+          title="Forward (Alt+Right)" aria-label="Go forward" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+          </svg>
+        </button>
+        <button class="nav-btn" id="reload-btn"
+          title="Reload (Ctrl+R)" aria-label="Reload page">
+          <svg class="icon-reload" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          <svg class="icon-stop" viewBox="0 0 24 24" style="display:none" aria-hidden="true">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Omnibar -->
+      <div id="omnibar-wrap" role="search" aria-label="Address bar">
+        <!-- Security indicator -->
+        <button id="security-btn" class="omni-icon-btn"
+          aria-label="Site information" title="Site information" tabindex="-1">
+          <svg class="icon-secure" viewBox="0 0 24 24" style="display:none" aria-hidden="true">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+          </svg>
+          <svg class="icon-insecure" viewBox="0 0 24 24" style="display:none" aria-hidden="true">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v6h-2V7zm0 8h2v2h-2v-2z"/>
+          </svg>
+          <svg class="icon-internal" viewBox="0 0 24 24" style="display:none" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          <svg class="icon-default" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </button>
+
+        <!-- URL input -->
+        <input
+          type="text"
+          id="omnibar"
+          placeholder="Search or type a URL"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Address and search bar"
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="omni-suggestions"
+          aria-haspopup="listbox"
+        >
+
+        <!-- Bookmark toggle -->
+        <button id="bookmark-btn" class="omni-icon-btn"
+          title="Bookmark this page (Ctrl+D)" aria-label="Bookmark this page" aria-pressed="false">
+          <svg class="icon-bm-off" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+          </svg>
+          <svg class="icon-bm-on" viewBox="0 0 24 24" style="display:none" aria-hidden="true">
+            <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+          </svg>
+        </button>
+
+        <!-- Suggestions dropdown -->
+        <div id="omni-suggestions" role="listbox" aria-label="Search suggestions"></div>
+      </div>
+
+      <!-- Right actions -->
+      <div id="toolbar-actions">
+
+        <!-- Zoom indicator (hidden when 100%) -->
+        <button class="nav-btn zoom-btn" id="zoom-indicator"
+          aria-label="Current zoom level" aria-live="polite" style="display:none">
+          100%
+        </button>
+
+        <!-- Command palette -->
+        <button class="nav-btn" id="cmd-btn"
+          title="Command Palette (Ctrl+K)" aria-label="Command palette"
+          aria-keyshortcuts="Control+K">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </button>
+
+        <!-- Menu -->
+        <button class="nav-btn" id="menu-btn"
+          title="Menu" aria-label="Main menu" aria-haspopup="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="5"  r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ── TAB BAR ──────────────────────────────────────────── -->
+    <div id="tabbar">
+      <!-- Tabs + new-tab btn live together so "+" sits right next to last tab -->
+      <div id="tabs-scroll" role="tablist" aria-label="Browser tabs">
+        <!-- .tab elements are injected here by renderer.js -->
+        <button id="new-tab-btn" title="New Tab (Ctrl+T)" aria-label="New tab"
+          aria-keyshortcuts="Control+T">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress bar (top of chrome) -->
+    <div id="page-progress" aria-hidden="true">
+      <div id="page-progress-bar"></div>
+    </div>
+
+  </div>
+  <!-- /chrome -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FIND IN PAGE BAR
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="find-bar" role="search" aria-label="Find in page" aria-hidden="true">
+    <div id="find-bar-inner">
+      <svg id="find-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="text" id="find-input"
+        placeholder="Find in page…"
+        aria-label="Search text"
+        autocomplete="off">
+      <span id="find-info" aria-live="polite">0 / 0</span>
+      <div class="find-sep"></div>
+      <button class="find-btn" id="find-prev"
+        title="Previous (Shift+Enter)" aria-label="Previous match">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+        </svg>
+      </button>
+      <button class="find-btn" id="find-next"
+        title="Next (Enter)" aria-label="Next match">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+        </svg>
+      </button>
+      <button class="find-btn find-close-btn" id="find-close"
+        title="Close (Escape)" aria-label="Close find bar">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       COMMAND PALETTE (Ctrl+K)
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="command-palette-overlay" role="dialog" aria-modal="true"
+    aria-label="Command palette" aria-hidden="true">
+    <div id="command-palette">
+      <div id="palette-search-wrap">
+        <svg id="palette-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="palette-input"
+          placeholder="Search tabs, history, bookmarks, commands…"
+          autocomplete="off"
+          aria-label="Command palette search"
+          aria-controls="palette-results"
+          aria-autocomplete="list"
+          role="combobox"
+          aria-expanded="true">
+        <kbd class="palette-esc-hint">ESC</kbd>
+      </div>
+      <div id="palette-results" role="listbox" aria-label="Command results"></div>
+      <div id="palette-footer">
+        <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span><kbd>↵</kbd> open</span>
+        <span><kbd>Ctrl+↵</kbd> new tab</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CONTEXT MENU
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="context-menu" role="menu" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="toast-container" aria-live="assertive" aria-atomic="false"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DOWNLOAD NOTIFICATION BAR (bottom)
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="download-bar" aria-live="polite" aria-label="Download notifications"></div>
+
+</div>
+<!-- /app -->
+
+<script src="renderer.js"></script>
+</body>
+</html>

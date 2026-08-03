@@ -1,0 +1,60 @@
+{
+  "name": "batbrowser",
+  "version": "2.0.0",
+  "description": "BatBrowser — A premium, secure, high-performance desktop browser built with Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "build": "electron-builder",
+    "verify": "node scripts/verify.js",
+    "clean": "node scripts/clean.js",
+    "release": "node scripts/release.js",
+    "lint": "eslint src/ ui/ --ext .js"
+  },
+  "keywords": [
+    "browser",
+    "electron",
+    "privacy",
+    "adblocker",
+    "desktop",
+    "nocturne"
+  ],
+  "author": "BatBrowser Team",
+  "license": "MIT",
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "build": {
+    "appId": "com.batbrowser.app",
+    "productName": "BatBrowser",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "preload/**/*",
+      "ui/**/*",
+      "assets/**/*",
+      "resources/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icons/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icons/icon.icns"
+    }
+  }
+}

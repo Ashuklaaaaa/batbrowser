@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" role="img" aria-label="BatBrowser loading">
+  <title>BatBrowser Loading</title>
+  <!--
+    BatBrowser — Loading Animation Variant
+    
+    Used during page load states. The bat dims slightly
+    and a ring orbits around it.
+    
+    Usage: Splash loading screen, tab loading indicator overlay
+    SHAPE IS CANONICAL — DO NOT MODIFY PATH DATA
+  -->
+  <defs>
+    <radialGradient id="load-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#00D4B4" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#00D4B4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Rotating arc gradient -->
+    <linearGradient id="arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00D4B4" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#00D4B4" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="200" height="120" fill="transparent"/>
+
+  <!-- Soft glow -->
+  <ellipse cx="100" cy="58" rx="72" ry="44" fill="url(#load-glow)"/>
+
+  <!-- The bat — slightly dimmed during loading -->
+  <path
+    d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"
+    fill="#00D4B4"
+    opacity="0.55"
+  />
+
+  <!-- Orbiting loading ring — ellipse arc (drawn as circle, transforms) -->
+  <g transform="translate(100, 56)">
+    <!-- Outer track ring (faint) -->
+    <ellipse cx="0" cy="0" rx="78" ry="48" fill="none" stroke="#00D4B4" stroke-width="1" opacity="0.10"/>
+
+    <!-- Animated arc (a circle rotated to look like an arc on an ellipse) -->
+    <!-- We use a stroke-dasharray trick on the ellipse -->
+    <ellipse
+      cx="0" cy="0"
+      rx="78" ry="48"
+      fill="none"
+      stroke="#00D4B4"
+      stroke-width="2"
+      stroke-dasharray="60 999"
+      stroke-linecap="round"
+      opacity="0.9"
+    >
+      <animateTransform
+        attributeName="transform"
+        type="rotate"
+        values="0; 360"
+        dur="1.8s"
+        repeatCount="indefinite"
+        calcMode="linear"
+      />
+    </ellipse>
+  </g>
+</svg>

@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120" role="img" aria-label="BatBrowser animated logo">
+  <title>BatBrowser</title>
+  <!--
+    BatBrowser — Animated Logo (Startup + Loading)
+    
+    Animation sequence:
+    1. Bat fades in (opacity 0→1) over 600ms
+    2. Soft pulse glow radiates outward continuously
+    3. A shimmer/sweep moves across the bat wings on loop
+    
+    Usage: Splash screen, loading states, new tab page hero
+    SHAPE IS CANONICAL — DO NOT MODIFY PATH DATA
+  -->
+  <defs>
+    <!-- Glow radial gradient -->
+    <radialGradient id="bat-glow" cx="50%" cy="55%" r="50%">
+      <stop offset="0%"   stop-color="#00D4B4" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#00D4B4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Shimmer linear gradient (moves across wings) -->
+    <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00D4B4" stop-opacity="0"/>
+      <stop offset="40%"  stop-color="#AFFFFF" stop-opacity="0.35"/>
+      <stop offset="50%"  stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="60%"  stop-color="#AFFFFF" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#00D4B4" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Clip path to confine shimmer to bat shape -->
+    <clipPath id="bat-clip">
+      <path d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background (transparent — embed on any dark surface) -->
+  <rect width="200" height="120" fill="transparent"/>
+
+  <!-- === LAYER 1: Pulsing glow behind the bat === -->
+  <ellipse cx="100" cy="62" rx="70" ry="42" fill="url(#bat-glow)">
+    <animate
+      attributeName="rx"
+      values="70; 85; 70"
+      dur="2.8s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
+    />
+    <animate
+      attributeName="ry"
+      values="42; 52; 42"
+      dur="2.8s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
+    />
+    <animate
+      attributeName="opacity"
+      values="0.6; 1; 0.6"
+      dur="2.8s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
+    />
+  </ellipse>
+
+  <!-- === LAYER 2: The bat silhouette === -->
+  <g id="bat-body">
+    <!-- Startup fade-in animation -->
+    <animateTransform
+      attributeName="transform"
+      type="scale"
+      values="0.92,0.92; 1,1"
+      dur="0.7s"
+      fill="freeze"
+      calcMode="spline"
+      keySplines="0.34 1.56 0.64 1"
+      additive="sum"
+    />
+
+    <path
+      id="bat-path"
+      d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"
+      fill="#00D4B4"
+    >
+      <!-- Startup fade in -->
+      <animate
+        attributeName="opacity"
+        values="0; 1"
+        dur="0.6s"
+        fill="freeze"
+        calcMode="spline"
+        keySplines="0.4 0 0.2 1"
+      />
+      <!-- Continuous subtle breathing -->
+      <animate
+        attributeName="opacity"
+        values="1; 0.88; 1"
+        dur="2.8s"
+        begin="0.7s"
+        repeatCount="indefinite"
+        calcMode="spline"
+        keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
+      />
+    </path>
+  </g>
+
+  <!-- === LAYER 3: Shimmer sweep across bat (looping) === -->
+  <g clip-path="url(#bat-clip)">
+    <rect
+      x="-200" y="0"
+      width="200" height="120"
+      fill="url(#shimmer)"
+      opacity="0.6"
+    >
+      <!-- Start shimmer after fade-in completes -->
+      <animate
+        attributeName="x"
+        values="-200; 200"
+        dur="2.2s"
+        begin="1.2s"
+        repeatCount="indefinite"
+        calcMode="spline"
+        keySplines="0.4 0 0.2 1"
+      />
+    </rect>
+  </g>
+</svg>

@@ -1,0 +1,302 @@
+/* ═══════════════════════════════════════════════════════════════
+   BatBrowser — NOCTURNE Design System
+   Complete token system. Single source of truth for all UI.
+   
+   Design Language: NOCTURNE
+   Accent: #00D4B4 (derived from the official BatBrowser logo)
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* ─── Root (Dark Theme — default) ────────────────────────────── */
+:root {
+
+  /* ── Raw Palette ─────────────────────────────────────────────
+     NOCTURNE deep blue-blacks. Not pure black — has blue undertone
+     that feels premium and works with the teal accent.
+  ────────────────────────────────────────────────────────────── */
+  --noc-000: #040608;
+  --noc-50:  #080A0F;   /* Abyss */
+  --noc-100: #0C0F16;   /* Void */
+  --noc-150: #10141C;
+  --noc-200: #121419;   /* Obsidian */
+  --noc-250: #161920;
+  --noc-300: #181B22;   /* Slate */
+  --noc-350: #1C1F28;
+  --noc-400: #1E2129;   /* Dusk */
+  --noc-450: #22252E;
+  --noc-500: #232730;   /* Twilight */
+  --noc-600: #292E38;   /* Midnight */
+  --noc-700: #353A45;
+  --noc-800: #424850;
+  --noc-900: #5A6070;
+  --noc-950: #8892A4;   /* Mist */
+  --noc-max: #F0F2F5;   /* Cloud */
+
+  /* ── Semantic Surface Tokens ────────────────────────────────── */
+  --bg:              var(--noc-50);
+  --bg-deep:         var(--noc-000);
+  --bg-alt:          var(--noc-100);
+  --surface-0:       var(--noc-100);
+  --surface-1:       var(--noc-200);
+  --surface-2:       var(--noc-300);
+  --surface-3:       var(--noc-400);
+  --surface-hover:   var(--noc-500);
+  --surface-active:  var(--noc-600);
+  --surface-pressed: var(--noc-700);
+
+  /* ── Border Tokens ──────────────────────────────────────────── */
+  --border-dim:    rgba(255, 255, 255, 0.04);
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-focus:  rgba(0, 212, 180, 0.5);
+
+  /* ── Text Tokens ────────────────────────────────────────────── */
+  --text:          var(--noc-max);
+  --text-secondary: var(--noc-950);
+  --text-muted:    #6E7889;   /* WCAG AA: 4.6:1 on #080A0F */
+  --text-disabled: #424850;
+  --text-inverse:  var(--noc-50);
+
+  /* ── Accent — BatBrowser Logo Teal ──────────────────────────── */
+  --accent:        #00D4B4;
+  --accent-bright: #00F5D0;
+  --accent-deep:   #00A88E;
+  --accent-dim:    rgba(0, 212, 180, 0.12);
+  --accent-glow:   rgba(0, 212, 180, 0.20);
+  --accent-ring:   rgba(0, 212, 180, 0.35);
+
+  /* ── Status ─────────────────────────────────────────────────── */
+  --success:        #2ECC7A;
+  --success-dim:    rgba(46, 204, 122, 0.12);
+  --warning:        #F0A030;
+  --warning-dim:    rgba(240, 160, 48, 0.12);
+  --danger:         #E85555;
+  --danger-dim:     rgba(232, 85, 85, 0.12);
+  --danger-hover:   #D43F3F;
+  --info:           #5B8EF0;
+  --info-dim:       rgba(91, 142, 240, 0.12);
+
+  /* ── Security Indicators ────────────────────────────────────── */
+  --secure:         #2ECC7A;
+  --insecure:       #E85555;
+  --internal:       #5B8EF0;
+
+  /* ── Glass / Blur ───────────────────────────────────────────── */
+  --glass-bg:       rgba(12, 15, 22, 0.80);
+  --glass-bg-light: rgba(22, 25, 32, 0.75);
+  --glass-border:   rgba(255, 255, 255, 0.06);
+  --glass-blur:     24px;
+  --glass-blur-sm:  12px;
+
+  /* ── Typography ─────────────────────────────────────────────── */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:  'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* Scale */
+  --text-2xs:  10px;
+  --text-xs:   11px;
+  --text-sm:   12px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   15px;
+  --text-xl:   18px;
+  --text-2xl:  22px;
+  --text-3xl:  28px;
+  --text-4xl:  36px;
+  --text-hero: 64px;
+
+  /* Weights */
+  --weight-thin:     100;
+  --weight-light:    300;
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Line heights */
+  --leading-none:     1;
+  --leading-tight:    1.2;
+  --leading-snug:     1.35;
+  --leading-normal:   1.5;
+  --leading-relaxed:  1.65;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.04em;
+  --tracking-tight:   -0.02em;
+  --tracking-normal:   0;
+  --tracking-wide:     0.025em;
+  --tracking-wider:    0.06em;
+  --tracking-label:    0.08em;
+
+  /* ── Spacing Scale (4px base) ───────────────────────────────── */
+  --space-px:  1px;
+  --space-0:   0px;
+  --space-1:   2px;
+  --space-2:   4px;
+  --space-3:   6px;
+  --space-4:   8px;
+  --space-5:   10px;
+  --space-6:   12px;
+  --space-7:   14px;
+  --space-8:   16px;
+  --space-10:  20px;
+  --space-12:  24px;
+  --space-14:  28px;
+  --space-16:  32px;
+  --space-20:  40px;
+  --space-24:  48px;
+  --space-32:  64px;
+  --space-40:  80px;
+  --space-48:  96px;
+
+  /* ── Border Radius Scale ────────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs:   3px;
+  --radius-sm:   5px;
+  --radius:      7px;
+  --radius-md:   9px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-3xl:  28px;
+  --radius-full: 9999px;
+
+  /* ── Shadow Scale ───────────────────────────────────────────── */
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-sm:  0 2px 4px rgba(0, 0, 0, 0.55);
+  --shadow:     0 4px 12px rgba(0, 0, 0, 0.65);
+  --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.70);
+  --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.75);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.80);
+  --shadow-2xl: 0 40px 80px rgba(0, 0, 0, 0.85);
+
+  /* Colored shadow for accent elements */
+  --shadow-accent: 0 4px 20px rgba(0, 212, 180, 0.20);
+  --shadow-accent-lg: 0 8px 40px rgba(0, 212, 180, 0.25);
+
+  /* ── Animation / Motion System ──────────────────────────────── */
+  --ease:         cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-back:    cubic-bezier(0.36, 0, 0.66, -0.56);
+
+  /* Duration scale */
+  --dur-instant: 0ms;
+  --dur-micro:   60ms;    /* hover backgrounds */
+  --dur-fast:    100ms;   /* icon states, badges */
+  --dur-normal:  160ms;   /* button transitions */
+  --dur-slow:    260ms;   /* panel slides, sidebar */
+  --dur-slower:  380ms;   /* modals, overlays */
+  --dur-dramatic: 500ms;  /* page-level transitions */
+
+  /* ── Layout Dimensions ──────────────────────────────────────── */
+  --titlebar-h:    40px;
+  --toolbar-h:     48px;
+  --tabbar-h:      36px;
+  --chrome-h:      124px;   /* titlebar + toolbar + tabbar */
+  --sidebar-rail:  52px;    /* always-visible icon rail */
+  --sidebar-panel: 280px;   /* expanded sidebar panel width */
+  --tab-min-w:     100px;
+  --tab-max-w:     220px;
+  --tab-h:         28px;
+  --find-bar-h:    44px;
+
+  /* ── Scrollbar ──────────────────────────────────────────────── */
+  --scrollbar-w:           5px;
+  --scrollbar-thumb:       rgba(255, 255, 255, 0.12);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+
+  /* ── Z-index Stack ──────────────────────────────────────────── */
+  --z-below:     -1;
+  --z-base:       0;
+  --z-raised:    10;
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-sidebar:   300;
+  --z-overlay:   400;
+  --z-modal:     500;
+  --z-toast:     600;
+  --z-tooltip:   700;
+}
+
+/* ─── Light Theme ──────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:              #F5F6F8;
+  --bg-deep:         #ECEEF1;
+  --bg-alt:          #ECEEF1;
+  --surface-0:       #ECEEF1;
+  --surface-1:       #FFFFFF;
+  --surface-2:       #F5F6F8;
+  --surface-3:       #ECEEF1;
+  --surface-hover:   #E8EAED;
+  --surface-active:  #E0E3E8;
+  --surface-pressed: #D8DCE3;
+
+  --border-dim:    rgba(0, 0, 0, 0.04);
+  --border:        rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.16);
+
+  --text:           #111318;
+  --text-secondary: #4A505C;
+  --text-muted:     #6B7280;   /* WCAG AA: 4.5:1 on #F5F6F8 */
+  --text-disabled:  #A0A8B4;
+
+  --accent:        #00A88E;   /* Deeper teal for white bg contrast */
+  --accent-bright: #00C4A6;
+  --accent-deep:   #008A74;
+  --accent-dim:    rgba(0, 168, 142, 0.10);
+  --accent-glow:   rgba(0, 168, 142, 0.18);
+  --accent-ring:   rgba(0, 168, 142, 0.30);
+
+  --glass-bg:       rgba(255, 255, 255, 0.85);
+  --glass-bg-light: rgba(245, 246, 248, 0.90);
+  --glass-border:   rgba(0, 0, 0, 0.07);
+
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-sm:  0 2px 4px rgba(0, 0, 0, 0.10);
+  --shadow:     0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.14);
+  --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.16);
+
+  --scrollbar-thumb:       rgba(0, 0, 0, 0.16);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+}
+
+/* ─── AMOLED Theme ─────────────────────────────────────────────── */
+[data-theme="amoled"] {
+  --bg:              #000000;
+  --bg-deep:         #000000;
+  --bg-alt:          #000000;
+  --surface-0:       #050505;
+  --surface-1:       #0A0A0A;
+  --surface-2:       #111111;
+  --surface-3:       #171717;
+  --surface-hover:   #1C1C1C;
+  --surface-active:  #222222;
+  --surface-pressed: #2A2A2A;
+
+  --border-dim:    rgba(255, 255, 255, 0.03);
+  --border:        rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.10);
+
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.9);
+  --shadow-sm:  0 2px 4px rgba(0, 0, 0, 0.9);
+  --shadow:     0 4px 12px rgba(0, 0, 0, 0.95);
+  --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.97);
+  --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.99);
+}
+
+/* ─── Reduced Motion ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro:    0ms;
+    --dur-fast:     0ms;
+    --dur-normal:   0ms;
+    --dur-slow:     0ms;
+    --dur-slower:   0ms;
+    --dur-dramatic: 0ms;
+    --ease-spring:  linear;
+  }
+}

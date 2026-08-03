@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="BatBrowser">
+  <title>BatBrowser</title>
+  <!--
+    BatBrowser — Favicon / Small Icon (32×32)
+    Optimized for small sizes — slightly simplified curves for crisp rendering
+    Background: #080A0F | Bat: #00D4B4
+    Usage: Browser favicon, taskbar, window titlebar icon
+    SHAPE IS CANONICAL — DO NOT MODIFY PATH DATA
+  -->
+  <rect width="32" height="32" fill="#080A0F" rx="6"/>
+  <!-- Scaled path: original 200×120 → 32×32, centered with padding -->
+  <!-- Bat occupies roughly 28×18 of the 32×32 space, centered -->
+  <path
+    transform="translate(2, 5) scale(0.14, 0.1833)"
+    d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"
+    fill="#00D4B4"
+  />
+</svg>

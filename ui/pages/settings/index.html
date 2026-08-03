@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
+  <title>Settings — BatBrowser</title>
+  <link rel="icon" type="image/svg+xml" href="../../shared/logo-favicon.svg">
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-y: auto;
+      min-height: 100vh;
+    }
+
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input  { font-family: inherit; outline: none; border: none; }
+    select { font-family: inherit; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Nav ── */
+    .nav {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface-1);
+      border-right: 1px solid var(--border-dim);
+      padding: 28px 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-header {
+      padding: 0 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo { width: 28px; height: 17px; fill: var(--accent); flex-shrink: 0; }
+
+    .nav-title {
+      font-size: var(--text-lg);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-tight);
+    }
+
+    .nav-search { padding: 0 4px 16px; }
+
+    .nav-search-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 7px 10px;
+      transition: border-color var(--dur-fast) var(--ease);
+    }
+
+    .nav-search-inner:focus-within { border-color: var(--border-focus); }
+
+    .nav-search-inner svg { width: 13px; height: 13px; fill: var(--text-muted); flex-shrink: 0; }
+
+    .nav-search-input {
+      background: none;
+      font-size: var(--text-sm);
+      color: var(--text);
+      width: 100%;
+    }
+
+    .nav-search-input::placeholder { color: var(--text-muted); }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: var(--weight-semibold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 12px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+      user-select: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; opacity: 0.7; }
+    .nav-item:hover { background: var(--surface-hover); color: var(--text); }
+    .nav-item:hover svg { opacity: 1; }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-item.active svg { opacity: 1; }
+
+    /* ── Main ── */
+    .main { flex: 1; padding: 48px; max-width: 740px; }
+
+    .section { display: none; }
+    .section.active { display: block; animation: section-in 0.2s var(--ease-out) both; }
+
+    @keyframes section-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-tight);
+      margin-bottom: 6px;
+    }
+
+    .section-desc { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+
+    .card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-dim);
+      transition: background var(--dur-micro) var(--ease);
+    }
+
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row:hover { background: rgba(255,255,255,0.02); }
+
+    .setting-info { flex: 1; min-width: 0; }
+
+    .setting-label {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .setting-detail { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.45; }
+
+    /* ── Toggle ── */
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--surface-3);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background var(--dur-normal) var(--ease);
+      border: 1px solid var(--border);
+    }
+
+    .toggle input:checked ~ .toggle-track { background: var(--accent); border-color: var(--accent); }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      background: white;
+      border-radius: 50%;
+      transition: transform var(--dur-normal) var(--ease-spring);
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .toggle input:checked ~ .toggle-track .toggle-thumb { transform: translateX(18px); }
+
+    /* ── Select ── */
+    .setting-select {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: var(--text-sm);
+      padding: 6px 28px 6px 10px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236E7889'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      background-size: 16px;
+      min-width: 140px;
+      transition: border-color var(--dur-fast) var(--ease);
+      font-family: inherit;
+    }
+
+    .setting-select:focus { border-color: var(--border-focus); outline: none; }
+
+    /* ── Theme Cards ── */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 16px 20px;
+    }
+
+    .theme-card {
+      border: 2px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color var(--dur-fast) var(--ease), transform var(--dur-normal) var(--ease-spring);
+      position: relative;
+    }
+
+    .theme-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+    .theme-card.active { border-color: var(--accent); }
+
+    .theme-card.active::after {
+      content: '';
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 18px; height: 18px;
+      background: var(--accent);
+      border-radius: 50%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+      background-size: 12px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .theme-preview { height: 56px; position: relative; overflow: hidden; }
+    .theme-preview-dark  { background: #080A0F; }
+    .theme-preview-light { background: #F5F6F8; }
+    .theme-preview-amoled{ background: #000000; }
+
+    .theme-preview-bar { position: absolute; top: 0; left: 0; right: 0; height: 12px; }
+    .theme-preview-dark .theme-preview-bar  { background: #121419; }
+    .theme-preview-light .theme-preview-bar { background: #FFFFFF; }
+    .theme-preview-amoled .theme-preview-bar{ background: #0A0A0A; }
+
+    .theme-preview-dot { position: absolute; bottom: 10px; left: 10px; width: 28px; height: 4px; background: var(--accent); border-radius: 3px; opacity: 0.8; }
+
+    .theme-name { padding: 6px 10px; font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--text-secondary); background: var(--surface-2); }
+
+    /* ── Color Swatches ── */
+    .color-swatches { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+
+    .color-swatch {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform var(--dur-fast) var(--ease-spring), border-color var(--dur-fast) var(--ease);
+    }
+
+    .color-swatch.active { border-color: var(--text); transform: scale(1.18); }
+    .color-swatch:hover { transform: scale(1.1); }
+
+    .color-custom {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px dashed var(--border-strong);
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      position: relative;
+    }
+
+    .color-custom:hover { border-color: var(--accent); }
+    .color-custom svg { width: 11px; height: 11px; fill: var(--text-muted); pointer-events: none; }
+
+    /* ── Range ── */
+    .setting-range { display: flex; align-items: center; gap: 10px; }
+
+    .setting-range input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 120px; height: 4px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .setting-range input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .range-value { font-size: var(--text-xs); color: var(--accent); font-weight: var(--weight-semibold); min-width: 34px; text-align: right; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: background var(--dur-micro) var(--ease), transform var(--dur-fast) var(--ease-spring);
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn-default { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+    .btn-default:hover { background: var(--surface-hover); }
+    .btn-accent { background: var(--accent); color: #000; border: 1px solid transparent; }
+    .btn-accent:hover { background: var(--accent-bright); }
+    .btn-danger { background: var(--danger-dim); border: 1px solid rgba(232,85,85,0.25); color: var(--danger); }
+    .btn-danger:hover { background: rgba(232,85,85,0.2); }
+
+    /* ── Danger Card ── */
+    .danger-card { background: var(--danger-dim); border-color: rgba(232,85,85,0.15); }
+    .danger-card .setting-label { color: var(--danger); }
+
+    /* ── Version Badge ── */
+    .version-badge {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-ring);
+    }
+
+    kbd {
+      background: var(--surface-3);
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .search-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="nav" aria-label="Settings navigation">
+    <div class="nav-header">
+      <svg class="nav-logo" viewBox="0 0 200 120" aria-hidden="true">
+        <path d="M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40 L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44 L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58 L115,72 Z"/>
+      </svg>
+      <span class="nav-title">Settings</span>
+    </div>
+
+    <div class="nav-search">
+      <div class="nav-search-inner">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input id="settings-search" class="nav-search-input" type="text" placeholder="Search settings…" autocomplete="off" aria-label="Search settings">
+      </div>
+    </div>
+
+    <div class="nav-section-label">Preferences</div>
+    <button class="nav-item active" data-section="appearance" onclick="showSection('appearance')">
+      <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      Appearance
+    </button>
+    <button class="nav-item" data-section="general" onclick="showSection('general')">
+      <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94zM12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+      General
+    </button>
+    <button class="nav-item" data-section="privacy" onclick="showSection('privacy')">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4.9l5 2.22v3.88c0 3.65-2.37 6.74-5 7.78-2.63-1.04-5-4.13-5-7.78V7.12l5-2.22z"/></svg>
+      Privacy & Security
+    </button>
+    <button class="nav-item" data-section="search" onclick="showSection('search')">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      Search Engine
+    </button>
+    <button class="nav-item" data-section="downloads-settings" onclick="showSection('downloads-settings')">
+      <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+      Downloads
+    </button>
+    <button class="nav-item" data-section="tabs" onclick="showSection('tabs')">
+      <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h10v4h8v10z"/></svg>
+      Tabs
+    </button>
+    <button class="nav-item" data-section="permissions" onclick="showSection('permissions')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Permissions
+    </button>
+    <div class="nav-section-label">System</div>
+    <button class="nav-item" data-section="shortcuts" onclick="showSection('shortcuts')">
+      <svg viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 5H5v-2h2v2zm0-3H5v-2h2v2zm0-3H5V8h2v2zm9 6h-8v-2h8v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2zm3 6h-2v-2h2v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>
+      Shortcuts
+    </button>
+    <button class="nav-item" data-section="about" onclick="showSection('about')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      About
+    </button>
+  </nav>
+
+  <main class="main" id="main-content">
+
+    <!-- APPEARANCE -->
+    <section class="section active" id="section-appearance">
+      <h1 class="section-title">Appearance</h1>
+      <p class="section-desc">Customize how BatBrowser looks and feels.</p>
+
+      <div class="card">
+        <div class="setting-row" style="display:block; padding:16px 20px;">
+          <div class="setting-label" style="margin-bottom:14px;">Theme</div>
+          <div class="theme-grid">
+            <div class="theme-card active" data-theme="dark" onclick="setTheme('dark')" role="button" tabindex="0" aria-label="Dark theme">
+              <div class="theme-preview theme-preview-dark"><div class="theme-preview-bar"></div><div class="theme-preview-dot"></div></div>
+              <div class="theme-name">Dark</div>
+            </div>
+            <div class="theme-card" data-theme="light" onclick="setTheme('light')" role="button" tabindex="0" aria-label="Light theme">
+              <div class="theme-preview theme-preview-light"><div class="theme-preview-bar"></div><div class="theme-preview-dot"></div></div>
+              <div class="theme-name">Light</div>
+            </div>
+            <div class="theme-card" data-theme="amoled" onclick="setTheme('amoled')" role="button" tabindex="0" aria-label="AMOLED theme">
+              <div class="theme-preview theme-preview-amoled"><div class="theme-preview-bar"></div><div class="theme-preview-dot"></div></div>
+              <div class="theme-name">AMOLED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Accent Color</div>
+            <div class="setting-detail">Highlight color used throughout the interface</div>
+          </div>
+          <div class="color-swatches">
+            <div class="color-swatch active" style="background:#00D4B4" data-color="#00D4B4" onclick="setAccent('#00D4B4')" title="NOCTURNE Teal" role="button" tabindex="0" aria-label="Teal"></div>
+            <div class="color-swatch" style="background:#5B8EF0" data-color="#5B8EF0" onclick="setAccent('#5B8EF0')" title="Ocean Blue" role="button" tabindex="0" aria-label="Blue"></div>
+            <div class="color-swatch" style="background:#8B5CF6" data-color="#8B5CF6" onclick="setAccent('#8B5CF6')" title="Violet" role="button" tabindex="0" aria-label="Violet"></div>
+            <div class="color-swatch" style="background:#F43F5E" data-color="#F43F5E" onclick="setAccent('#F43F5E')" title="Rose" role="button" tabindex="0" aria-label="Rose"></div>
+            <div class="color-swatch" style="background:#F59E0B" data-color="#F59E0B" onclick="setAccent('#F59E0B')" title="Amber" role="button" tabindex="0" aria-label="Amber"></div>
+            <div class="color-swatch" style="background:#10B981" data-color="#10B981" onclick="setAccent('#10B981')" title="Emerald" role="button" tabindex="0" aria-label="Emerald"></div>
+            <label class="color-custom" title="Custom color" aria-label="Pick custom color">
+              <input type="color" id="accent-color-input" style="position:absolute;opacity:0;width:0;height:0;" onchange="setAccent(this.value)">
+              <svg viewBox="0 0 24 24"><path d="M20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-3.12 3.12-1.41-1.42-1.42 1.42 1.41 1.41-6.6 6.6A2 2 0 0 0 5 16v3h3a2 2 0 0 0 1.42-.59l6.6-6.6 1.41 1.42 1.42-1.42-1.42-1.41 3.12-3.12a1 1 0 0 0 0-1.65z"/></svg>
+            </label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Font Size</div>
+            <div class="setting-detail">Scale text across the browser interface</div>
+          </div>
+          <div class="setting-range">
+            <input type="range" id="font-scale" min="0.8" max="1.2" step="0.1" value="1.0" oninput="setFontScale(this.value)" aria-label="Font size">
+            <span class="range-value" id="font-scale-value">100%</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Compact Mode</div>
+            <div class="setting-detail">Reduce spacing to show more content</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-compact" onchange="saveSetting('compactMode', this.checked)" aria-label="Compact mode">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Show Bookmarks Bar</div>
+            <div class="setting-detail">Display the bookmarks bar below the toolbar</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-bookmarks-bar" onchange="saveSetting('showBookmarksBar', this.checked)" aria-label="Bookmarks bar">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- GENERAL -->
+    <section class="section" id="section-general">
+      <h1 class="section-title">General</h1>
+      <p class="section-desc">Core browser behavior and startup preferences.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Restore Session on Start</div>
+            <div class="setting-detail">Reopen your last tabs when BatBrowser starts</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-restore" onchange="saveSetting('restoreSessionOnStart', this.checked)" aria-label="Restore session">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Hardware Acceleration</div>
+            <div class="setting-detail">Use your GPU for rendering. Restart required to take effect.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-hw-accel" onchange="saveSetting('hardwareAcceleration', this.checked)" aria-label="Hardware acceleration">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="section" id="section-privacy">
+      <h1 class="section-title">Privacy & Security</h1>
+      <p class="section-desc">Control tracking, cookies, and your digital footprint.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Ad & Tracker Blocking</div>
+            <div class="setting-detail">Block ads and trackers network-wide</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-adblock" onchange="saveSetting('adBlockEnabled', this.checked)" aria-label="Ad blocking">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Send "Do Not Track"</div>
+            <div class="setting-detail">Request sites not track you (honored by few sites)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-dnt" onchange="saveSetting('doNotTrack', this.checked)" aria-label="Do not track">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Global Privacy Control</div>
+            <div class="setting-detail">Opt out of data sales under CCPA and similar laws</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-gpc" onchange="saveSetting('globalPrivacyControl', this.checked)" aria-label="Global privacy control">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Block Third-Party Cookies</div>
+            <div class="setting-detail">Prevent cross-site tracking via cookies. May break some sites.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-3p-cookies" onchange="saveSetting('blockThirdPartyCookies', this.checked)" aria-label="Block third-party cookies">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+
+      <h2 style="font-size:var(--text-lg);font-weight:var(--weight-semibold);margin:24px 0 12px;">Clear Browsing Data</h2>
+      <div class="card danger-card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Clear Cookies</div>
+            <div class="setting-detail">Sign out of all websites</div>
+          </div>
+          <button class="btn btn-danger" onclick="clearCookies()">Clear Cookies</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Clear Cache</div>
+            <div class="setting-detail">Free up disk space (may slow first loads temporarily)</div>
+          </div>
+          <button class="btn btn-danger" onclick="clearCache()">Clear Cache</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Clear All Data</div>
+            <div class="setting-detail">Remove everything — cookies, cache, history</div>
+          </div>
+          <button class="btn btn-danger" onclick="clearAll()">Clear Everything</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH -->
+    <section class="section" id="section-search">
+      <h1 class="section-title">Search Engine</h1>
+      <p class="section-desc">Choose your default search provider for the address bar.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Default Search Engine</div>
+            <div class="setting-detail">Used for searches typed in the address bar</div>
+          </div>
+          <select class="setting-select" id="search-engine" onchange="saveSetting('searchEngine', this.value)" aria-label="Search engine">
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="brave">Brave Search</option>
+            <option value="ecosia">Ecosia</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOADS SETTINGS -->
+    <section class="section" id="section-downloads-settings">
+      <h1 class="section-title">Downloads</h1>
+      <p class="section-desc">Control where and how files are saved to your computer.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Ask Where to Save</div>
+            <div class="setting-detail">Show a save dialog for each download</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-ask-save" onchange="saveSetting('askWhereToSave', this.checked)" aria-label="Ask where to save">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Download Folder</div>
+            <div class="setting-detail" id="download-path-display">Using system default (Downloads)</div>
+          </div>
+          <button class="btn btn-default" onclick="openDownloadsFolder()">Open Folder</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABS -->
+    <section class="section" id="section-tabs">
+      <h1 class="section-title">Tabs</h1>
+      <p class="section-desc">Customize tab behavior and the tab bar layout.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Show Tab Previews</div>
+            <div class="setting-detail">Show thumbnail preview when hovering over a tab</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-tab-previews" onchange="saveSetting('showTabPreviews', this.checked)" aria-label="Tab previews">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Tab Bar Position</div>
+            <div class="setting-detail">Where the tab bar appears relative to the address bar</div>
+          </div>
+          <select class="setting-select" id="tabs-position" onchange="saveSetting('tabsPosition', this.value)" aria-label="Tab position">
+            <option value="bottom">Below Address Bar</option>
+            <option value="top">Above Address Bar</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- PERMISSIONS -->
+    <section class="section" id="section-permissions">
+      <h1 class="section-title">Permissions</h1>
+      <p class="section-desc">Control which websites can access sensitive APIs.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Notifications</div>
+            <div class="setting-detail">Allow websites to request notification permission</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-notif" onchange="saveSetting('enableNotifications', this.checked)" aria-label="Notifications">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Location</div>
+            <div class="setting-detail">Allow websites to request your geolocation</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-geo" onchange="saveSetting('enableGeolocation', this.checked)" aria-label="Geolocation">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Camera</div>
+            <div class="setting-detail">Allow websites to access your camera</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-cam" onchange="saveSetting('enableCamera', this.checked)" aria-label="Camera">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Microphone</div>
+            <div class="setting-detail">Allow websites to access your microphone</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-mic" onchange="saveSetting('enableMicrophone', this.checked)" aria-label="Microphone">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHORTCUTS -->
+    <section class="section" id="section-shortcuts">
+      <h1 class="section-title">Keyboard Shortcuts</h1>
+      <p class="section-desc">Master BatBrowser with these built-in keyboard shortcuts.</p>
+      <div class="card" id="shortcuts-list"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="section-about">
+      <h1 class="section-title">About BatBrowser</h1>
+      <p class="section-desc">Version information and credits.</p>
+      <div class="card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Version</div>
+            <div class="setting-detail">Built with Electron &amp; Chromium</div>
+          </div>
+          <span class="version-badge">v2.0.0</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Design Language</div>
+            <div class="setting-detail">NOCTURNE — crafted for focus, clarity &amp; beauty</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Reset All Settings</div>
+            <div class="setting-detail">Restore all settings to factory defaults</div>
+          </div>
+          <button class="btn btn-danger" onclick="resetSettings()">Reset to Defaults</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+'use strict';
+const bb = window.batBrowser;
+let _settings = {};
+
+async function init() {
+  if (!bb) return;
+  try { _settings = await bb.settings.get() || {}; } catch {}
+  applySettingsToUI();
+}
+
+function applySettingsToUI() {
+  const s = _settings;
+  document.documentElement.dataset.theme = s.theme || 'dark';
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === (s.theme || 'dark')));
+  if (s.accentColor) {
+    document.documentElement.style.setProperty('--accent', s.accentColor);
+    document.querySelectorAll('.color-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.color === s.accentColor));
+  }
+  const toggles = {
+    'toggle-compact': s.compactMode, 'toggle-bookmarks-bar': s.showBookmarksBar,
+    'toggle-restore': s.restoreSessionOnStart, 'toggle-hw-accel': s.hardwareAcceleration,
+    'toggle-adblock': s.adBlockEnabled, 'toggle-dnt': s.doNotTrack,
+    'toggle-gpc': s.globalPrivacyControl, 'toggle-3p-cookies': s.blockThirdPartyCookies,
+    'toggle-ask-save': s.askWhereToSave, 'toggle-tab-previews': s.showTabPreviews,
+    'toggle-notif': s.enableNotifications, 'toggle-geo': s.enableGeolocation,
+    'toggle-cam': s.enableCamera, 'toggle-mic': s.enableMicrophone,
+  };
+  Object.entries(toggles).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.checked = !!val; });
+  ['search-engine', 'tabs-position'].forEach(id => {
+    const map = { 'search-engine': s.searchEngine || 'google', 'tabs-position': s.tabsPosition || 'bottom' };
+    const el = document.getElementById(id);
+    if (el) el.value = map[id];
+  });
+  const slider = document.getElementById('font-scale');
+  if (slider) { slider.value = s.fontScale || 1.0; updateFontScaleLabel(s.fontScale || 1.0); }
+  if (s.downloadPath) { const el = document.getElementById('download-path-display'); if (el) el.textContent = s.downloadPath; }
+}
+
+async function saveSetting(key, value) {
+  _settings[key] = value;
+  try { await bb.settings.set(key, value); } catch {}
+}
+
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === theme));
+  saveSetting('theme', theme);
+}
+
+function setAccent(color) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.querySelectorAll('.color-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.color === color));
+  saveSetting('accentColor', color);
+}
+
+function setFontScale(value) { updateFontScaleLabel(value); saveSetting('fontScale', parseFloat(value)); }
+function updateFontScaleLabel(v) { const el = document.getElementById('font-scale-value'); if (el) el.textContent = Math.round(v * 100) + '%'; }
+
+async function clearCookies() { if (!confirm('Clear all cookies? You will be signed out of all websites.')) return; await bb.privacy.clearCookies(); showToast('Cookies cleared'); }
+async function clearCache()   { await bb.privacy.clearCache(); showToast('Cache cleared'); }
+async function clearAll()     { if (!confirm('Clear ALL browsing data? This cannot be undone.')) return; await bb.privacy.clearAll(); showToast('All data cleared'); }
+async function openDownloadsFolder() { await bb.downloads.openFolder(); }
+async function resetSettings() {
+  if (!confirm('Reset all settings to defaults?')) return;
+  await bb.settings.reset();
+  _settings = await bb.settings.get() || {};
+  applySettingsToUI();
+  showToast('Settings reset to defaults');
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const s = document.getElementById('section-' + id); if (s) s.classList.add('active');
+  const n = document.querySelector(`[data-section="${id}"]`); if (n) n.classList.add('active');
+}
+
+document.getElementById('settings-search').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  document.querySelectorAll('.setting-row').forEach(row => {
+    if (!q) { row.classList.remove('search-hidden'); return; }
+    const t = (row.querySelector('.setting-label')?.textContent || '') + ' ' + (row.querySelector('.setting-detail')?.textContent || '');
+    row.classList.toggle('search-hidden', !t.toLowerCase().includes(q));
+  });
+});
+
+const SHORTCUTS = [
+  ['Tabs & Windows', [['New Tab','Ctrl+T'],['Close Tab','Ctrl+W'],['Reopen Tab','Ctrl+Shift+T'],['Next Tab','Ctrl+Tab'],['Prev Tab','Ctrl+Shift+Tab'],['New Window','Ctrl+N'],['Incognito','Ctrl+Shift+N']]],
+  ['Navigation', [['Go Back','Alt+←'],['Go Forward','Alt+→'],['Reload','Ctrl+R'],['Hard Reload','Ctrl+Shift+R'],['Focus Address Bar','Ctrl+L'],['Command Palette','Ctrl+K']]],
+  ['Tools', [['Find in Page','Ctrl+F'],['Dev Tools','F12'],['View Source','Ctrl+U'],['Zoom In','Ctrl++'],['Zoom Out','Ctrl+-'],['Reset Zoom','Ctrl+0'],['Fullscreen','F11']]],
+  ['Pages', [['Settings','Ctrl+,'],['History','Ctrl+H'],['Downloads','Ctrl+J'],['Bookmarks','Ctrl+B']]],
+];
+
+function renderShortcuts() {
+  const c = document.getElementById('shortcuts-list');
+  if (!c) return;
+  c.innerHTML = SHORTCUTS.map(([group, items]) => `
+    <div style="padding:12px 20px 0;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">${group}</div>
+    ${items.map(([action, key]) => `
+      <div class="setting-row" style="padding:10px 20px;">
+        <span style="font-size:var(--text-sm);color:var(--text-secondary)">${action}</span>
+        <kbd>${key}</kbd>
+      </div>`).join('')}
+  `).join('');
+}
+
+function showToast(msg) {
+  const t = Object.assign(document.createElement('div'), { textContent: msg });
+  Object.assign(t.style, { position:'fixed', bottom:'24px', right:'24px', background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text)', padding:'10px 16px', borderRadius:'var(--radius-lg)', fontSize:'var(--text-sm)', boxShadow:'var(--shadow-lg)', zIndex:'9999', opacity:'0', transition:'opacity 0.2s' });
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.style.opacity = '1');
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 200); }, 2500);
+}
+
+renderShortcuts();
+init();
+</script>
+</body>
+</html>

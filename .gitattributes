@@ -1,0 +1,20 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# JS / HTML / CSS / JSON
+*.js text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+
+# Windows scripts
+*.bat text eol=crlf
+
+# Binary files
+*.ico binary
+*.png binary
+*.jpg binary
+*.webp binary
+*.icns binary
+*.zip binary

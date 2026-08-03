@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
+  <title>Page Not Found — BatBrowser</title>
+  <link rel="icon" type="image/svg+xml" href="../../shared/logo-favicon.svg">
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    /* ── Animated background ── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+    }
+
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(232,85,85,0.07), transparent 70%);
+      top: -100px; right: -60px;
+    }
+
+    .orb-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(0,212,180,0.04), transparent 70%);
+      bottom: -80px; left: 10%;
+    }
+
+    /* ── Content ── */
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+      max-width: 540px;
+      padding: 32px;
+      animation: content-in 0.6s var(--ease-out) both;
+    }
+
+    @keyframes content-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Error Icon ── */
+    .error-visual {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 32px;
+    }
+
+    .error-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--danger-dim);
+      border-radius: 50%;
+      animation: pulse-ring 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.06); opacity: 0.7; }
+    }
+
+    .error-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-icon svg { width: 42px; height: 42px; fill: var(--danger); }
+
+    /* ── Typography ── */
+    .error-code {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--danger);
+      margin-bottom: 12px;
+    }
+
+    .error-title {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-tight);
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+
+    .error-message {
+      font-size: var(--text-base);
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 420px;
+    }
+
+    /* ── URL Display ── */
+    .url-display {
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Suggestions ── */
+    .suggestions {
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .suggestions-title {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .suggestion-item svg { width: 14px; height: 14px; fill: var(--text-muted); flex-shrink: 0; }
+    .suggestion-item::before { content: '•'; color: var(--text-muted); font-size: 10px; }
+
+    /* ── Actions ── */
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: background var(--dur-micro) var(--ease), transform var(--dur-fast) var(--ease-spring);
+    }
+
+    .btn:active { transform: scale(0.96); }
+    .btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover { background: var(--accent-bright); }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover { background: var(--surface-hover); color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<div class="content" role="main">
+  <div class="error-visual" aria-hidden="true">
+    <div class="error-bg"></div>
+    <div class="error-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    </div>
+  </div>
+
+  <div class="error-code" id="error-code-display">ERR_CONNECTION_FAILED</div>
+
+  <h1 class="error-title" id="error-title">This page isn't available</h1>
+
+  <p class="error-message" id="error-message">
+    BatBrowser couldn't load this page. The site may be down, or there might be a network issue.
+  </p>
+
+  <div class="url-display" id="url-display">about:blank</div>
+
+  <div class="suggestions">
+    <div class="suggestions-title">Try these</div>
+    <div class="suggestion-item">Check your internet connection</div>
+    <div class="suggestion-item">Try reloading the page</div>
+    <div class="suggestion-item">Check that the URL is correct</div>
+    <div class="suggestion-item">Try again in a few minutes</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="reload()">
+      <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      Reload
+    </button>
+    <button class="btn btn-secondary" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      New Tab
+    </button>
+    <button class="btn btn-secondary" onclick="goBack()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Go Back
+    </button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const bb = window.batBrowser;
+
+// Error info passed via URL parameters
+function getParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name) || '';
+}
+
+const errorCode = getParam('errorCode') || 'ERR_CONNECTION_FAILED';
+const errorDesc = getParam('errorDescription') || 'BatBrowser couldn\'t load this page.';
+const failedUrl = getParam('failedUrl') || getParam('url') || '';
+
+// Update UI
+const codeEl = document.getElementById('error-code-display');
+const titleEl = document.getElementById('error-title');
+const msgEl   = document.getElementById('error-message');
+const urlEl   = document.getElementById('url-display');
+
+if (codeEl) codeEl.textContent = errorCode;
+if (msgEl)  msgEl.textContent  = errorDesc || 'BatBrowser couldn\'t load this page. The site may be down, or there might be a network issue.';
+if (urlEl && failedUrl) urlEl.textContent = failedUrl;
+
+// Customize title per error type
+const errorTitles = {
+  'ERR_NAME_NOT_RESOLVED':     'Site Not Found',
+  'ERR_CONNECTION_REFUSED':    'Connection Refused',
+  'ERR_CONNECTION_TIMED_OUT':  'Connection Timed Out',
+  'ERR_INTERNET_DISCONNECTED': 'No Internet Connection',
+  'ERR_NETWORK_CHANGED':       'Network Changed',
+  'ERR_SSL_PROTOCOL_ERROR':    'Secure Connection Failed',
+  'ERR_CERT_COMMON_NAME_INVALID': 'Certificate Error',
+};
+
+if (titleEl) titleEl.textContent = errorTitles[errorCode] || 'This Page Isn\'t Available';
+
+// Actions
+function reload() { if (bb) { bb.nav.reload(); } else { history.back(); } }
+function goBack()  { if (bb) bb.nav.back(); else history.back(); }
+function goHome()  { if (bb) bb.tab.create(); }
+
+// Theme
+async function applyTheme() {
+  if (!bb) return;
+  try {
+    const s = await bb.settings.get();
+    let theme = s.theme || 'dark';
+    if (theme === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+  } catch {}
+}
+
+applyTheme();
+</script>
+</body>
+</html>

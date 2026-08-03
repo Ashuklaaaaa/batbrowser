@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:;">
+  <title>Bookmarks — BatBrowser</title>
+  <link rel="icon" type="image/svg+xml" href="../../shared/logo-favicon.svg">
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input  { font-family: inherit; outline: none; border: none; }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 48px 32px; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-tight);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title svg { width: 24px; height: 24px; fill: var(--accent); }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      padding: 9px 14px;
+      width: 260px;
+      transition: border-color var(--dur-fast) var(--ease);
+    }
+
+    .search-bar:focus-within { border-color: var(--border-focus); }
+    .search-bar svg { width: 14px; height: 14px; fill: var(--text-muted); flex-shrink: 0; }
+    .search-input { background: none; font-size: var(--text-sm); color: var(--text); width: 100%; }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    /* ── Layout: sidebar + grid ── */
+    .bm-layout { display: flex; gap: 24px; min-height: 400px; }
+
+    /* ── Folder tree ── */
+    .folder-tree {
+      width: 200px;
+      flex-shrink: 0;
+    }
+
+    .folder-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 8px 8px;
+    }
+
+    .folder-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: var(--radius);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+      user-select: none;
+    }
+
+    .folder-item svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; opacity: 0.7; }
+    .folder-item:hover { background: var(--surface-1); color: var(--text); }
+    .folder-item.active { background: var(--accent-dim); color: var(--accent); }
+    .folder-item.active svg { opacity: 1; }
+    .folder-count { margin-left: auto; font-size: 10px; color: var(--text-muted); }
+
+    /* ── Bookmark grid ── */
+    .bm-content { flex: 1; min-width: 0; }
+
+    .bm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .bm-card {
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: border-color var(--dur-fast) var(--ease), transform var(--dur-normal) var(--ease-spring), background var(--dur-micro) var(--ease);
+      animation: card-in 0.2s var(--ease-out) both;
+      position: relative;
+      group: true;
+    }
+
+    @keyframes card-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .bm-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+
+    .bm-favicon {
+      width: 32px; height: 32px;
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .bm-favicon img { width: 20px; height: 20px; object-fit: contain; border-radius: 3px; }
+    .bm-favicon svg { width: 18px; height: 18px; fill: var(--text-muted); opacity: 0.5; }
+
+    .bm-title {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      color: var(--text);
+      margin-bottom: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bm-url {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bm-delete {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 24px; height: 24px;
+      border-radius: var(--radius-xs);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity var(--dur-fast) var(--ease), background var(--dur-micro) var(--ease);
+      color: var(--text-muted);
+    }
+
+    .bm-card:hover .bm-delete { opacity: 1; }
+    .bm-delete:hover { background: var(--danger-dim); color: var(--danger); }
+    .bm-delete svg { width: 12px; height: 12px; fill: currentColor; pointer-events: none; }
+
+    /* ── Empty ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 32px;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .empty-icon { width: 56px; height: 56px; background: var(--surface-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .empty-icon svg { width: 28px; height: 28px; fill: var(--text-muted); opacity: 0.5; }
+    .empty-title { font-size: var(--text-lg); font-weight: var(--weight-medium); }
+    .empty-desc { font-size: var(--text-sm); color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+      Bookmarks
+    </h1>
+    <div class="search-bar" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="search" class="search-input" id="search-input" placeholder="Search bookmarks…" aria-label="Search bookmarks" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="bm-layout">
+    <nav class="folder-tree" id="folder-tree" aria-label="Bookmark folders">
+      <div class="folder-label">Folders</div>
+    </nav>
+    <div class="bm-content">
+      <div class="bm-grid" id="bm-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const bb = window.batBrowser;
+
+let _bookmarks = [];
+let _currentFolder = null;
+
+async function loadBookmarks() {
+  if (!bb) { renderEmpty(); return; }
+  try {
+    _bookmarks = await bb.bookmarks.get() || [];
+    buildFolderTree();
+    renderBookmarks(null);
+  } catch { renderEmpty(); }
+}
+
+function buildFolderTree() {
+  const tree = document.getElementById('folder-tree');
+  // Keep label
+  const label = tree.querySelector('.folder-label');
+  tree.innerHTML = '';
+  tree.appendChild(label);
+
+  // All Bookmarks item
+  const allItem = createFolderItem('All Bookmarks', null, _bookmarks.filter(b => !b.isFolder).length);
+  allItem.classList.add('active');
+  tree.appendChild(allItem);
+
+  // Folders
+  const folders = _bookmarks.filter(b => b.isFolder || b.type === 'folder');
+  folders.forEach(folder => {
+    const count = _bookmarks.filter(b => b.folderId === folder.id && !b.isFolder).length;
+    tree.appendChild(createFolderItem(folder.title || folder.name, folder.id, count));
+  });
+}
+
+function createFolderItem(label, folderId, count) {
+  const el = document.createElement('div');
+  el.className = 'folder-item';
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
+  el.innerHTML = `
+    <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(label)}</span>
+    <span class="folder-count">${count}</span>
+  `;
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.folder-item').forEach(f => f.classList.remove('active'));
+    el.classList.add('active');
+    _currentFolder = folderId;
+    renderBookmarks(folderId);
+  });
+  return el;
+}
+
+function renderBookmarks(folderId) {
+  const grid = document.getElementById('bm-grid');
+  const items = _bookmarks.filter(b =>
+    !b.isFolder && b.type !== 'folder' &&
+    (folderId === null ? true : b.folderId === folderId)
+  );
+
+  if (!items.length) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></div>
+        <div class="empty-title">No Bookmarks</div>
+        <div class="empty-desc">Bookmark a page with Ctrl+D to save it here</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = '';
+  items.forEach((bm, i) => {
+    const card = createCard(bm, i);
+    grid.appendChild(card);
+  });
+}
+
+function createCard(bm, i) {
+  const card = document.createElement('div');
+  card.className = 'bm-card';
+  card.style.animationDelay = Math.min(i * 20, 200) + 'ms';
+
+  const favicon = document.createElement('div');
+  favicon.className = 'bm-favicon';
+  if (bm.favicon) {
+    favicon.innerHTML = `<img src="${escapeAttr(bm.favicon)}" alt="" loading="lazy" onerror="this.style.display='none'">`;
+  } else {
+    favicon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`;
+  }
+
+  const title = document.createElement('div');
+  title.className = 'bm-title';
+  title.textContent = bm.title || bm.url || 'Bookmark';
+
+  const url = document.createElement('div');
+  url.className = 'bm-url';
+  url.textContent = getDomain(bm.url || '');
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'bm-delete';
+  delBtn.setAttribute('aria-label', 'Remove bookmark');
+  delBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+  delBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    await bb.bookmarks.remove(bm.id);
+    card.style.transition = 'opacity 0.15s, transform 0.15s';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.9)';
+    setTimeout(() => { card.remove(); _bookmarks = _bookmarks.filter(b => b.id !== bm.id); buildFolderTree(); }, 150);
+  });
+
+  card.addEventListener('click', () => { if (bm.url) bb.nav.go(bm.url); });
+  card.appendChild(favicon);
+  card.appendChild(title);
+  card.appendChild(url);
+  card.appendChild(delBtn);
+  return card;
+}
+
+function renderEmpty() {
+  document.getElementById('bm-grid').innerHTML = `
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></div>
+      <div class="empty-title">No Bookmarks Yet</div>
+      <div class="empty-desc">Press Ctrl+D on any page to save it here</div>
+    </div>
+  `;
+}
+
+document.getElementById('search-input').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  if (!q) { renderBookmarks(_currentFolder); return; }
+  const results = _bookmarks.filter(b =>
+    !b.isFolder && b.type !== 'folder' &&
+    ((b.title || '').toLowerCase().includes(q) || (b.url || '').toLowerCase().includes(q))
+  );
+  const grid = document.getElementById('bm-grid');
+  grid.innerHTML = '';
+  if (!results.length) {
+    renderEmpty();
+  } else {
+    results.forEach((bm, i) => grid.appendChild(createCard(bm, i)));
+  }
+});
+
+function getDomain(url) {
+  try { return new URL(url).hostname; } catch { return url; }
+}
+
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escapeAttr(s) { return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+async function applyTheme() {
+  if (!bb) return;
+  try {
+    const s = await bb.settings.get();
+    let theme = s.theme || 'dark';
+    if (theme === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+  } catch {}
+}
+
+applyTheme().then(loadBookmarks);
+</script>
+</body>
+</html>

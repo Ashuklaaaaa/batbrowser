@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Builds & Distribution
+dist/
+build-output/
+release/
+*.exe
+*.AppImage
+*.dmg
+*.zip
+
+# Local dev binaries & temporary logs
+electron-bin/
+*.log
+log.txt
+launch.log
+out.log
+
+# OS & Editor metadata
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+
+# User session data (electron-store / electronuserData)
+userData/
+*.log.old

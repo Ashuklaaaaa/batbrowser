@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:;">
+  <title>Downloads — BatBrowser</title>
+  <link rel="icon" type="image/svg+xml" href="../../shared/logo-favicon.svg">
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    .page { max-width: 820px; margin: 0 auto; padding: 48px 32px; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-tight);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title svg { width: 24px; height: 24px; fill: var(--accent); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--radius); font-size: var(--text-sm);
+      font-weight: var(--weight-medium); font-family: inherit; border: none;
+      transition: background var(--dur-micro) var(--ease), transform var(--dur-fast) var(--ease-spring);
+      cursor: pointer;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn svg { width: 14px; height: 14px; fill: currentColor; }
+    .btn-ghost { background: none; color: var(--text-muted); }
+    .btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+    .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(232,85,85,0.2); }
+    .btn-danger:hover { background: rgba(232,85,85,0.2); }
+
+    /* ── Download Card ── */
+    .download-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      margin-bottom: 8px;
+      transition: border-color var(--dur-fast) var(--ease), background var(--dur-micro) var(--ease);
+      animation: card-in 0.2s var(--ease-out) both;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .download-card:hover { border-color: var(--border); }
+    .download-card.downloading { border-color: var(--accent-ring); }
+
+    .file-icon {
+      width: 44px; height: 44px;
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .file-icon svg { width: 22px; height: 22px; fill: currentColor; }
+
+    .file-icon.icon-image { color: #5B8EF0; }
+    .file-icon.icon-video { color: #F43F5E; }
+    .file-icon.icon-audio { color: #8B5CF6; }
+    .file-icon.icon-archive { color: #F59E0B; }
+    .file-icon.icon-doc { color: #10B981; }
+    .file-icon.icon-code { color: var(--accent); }
+    .file-icon.icon-default { color: var(--text-muted); }
+
+    .download-info { flex: 1; min-width: 0; }
+
+    .download-name {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+      cursor: pointer;
+    }
+
+    .download-name:hover { color: var(--accent); }
+
+    .download-meta {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .download-meta .dot { opacity: 0.4; }
+
+    /* ── Progress Bar ── */
+    .progress-wrap {
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.3s var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 1.5s linear infinite;
+    }
+
+    @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
+
+    /* ── Status Badge ── */
+    .status-badge {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .status-badge.completed { background: var(--success-dim); color: var(--success); }
+    .status-badge.downloading { background: var(--accent-dim); color: var(--accent); animation: pulse 2s ease infinite; }
+    .status-badge.cancelled { background: var(--danger-dim); color: var(--danger); }
+    .status-badge.error { background: var(--danger-dim); color: var(--danger); }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    /* ── Actions ── */
+    .download-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .action-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: background var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+    }
+
+    .action-btn:hover { background: var(--surface-hover); color: var(--text); }
+    .action-btn.danger:hover { background: var(--danger-dim); color: var(--danger); }
+    .action-btn svg { width: 15px; height: 15px; fill: currentColor; pointer-events: none; }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 32px;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .empty-icon { width: 56px; height: 56px; background: var(--surface-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .empty-icon svg { width: 28px; height: 28px; fill: var(--text-muted); opacity: 0.5; }
+    .empty-title { font-size: var(--text-lg); font-weight: var(--weight-medium); }
+    .empty-desc { font-size: var(--text-sm); color: var(--text-muted); }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 20px 0 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+      Downloads
+    </h1>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="openFolder()">
+        <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+        Open Folder
+      </button>
+      <button class="btn btn-danger" onclick="clearDownloads()">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        Clear All
+      </button>
+    </div>
+  </div>
+
+  <div id="downloads-container"></div>
+</div>
+
+<script>
+'use strict';
+const bb = window.batBrowser;
+let _downloads = [];
+
+async function loadDownloads() {
+  if (!bb) { renderEmpty(); return; }
+  try {
+    _downloads = await bb.downloads.get() || [];
+    render();
+  } catch { renderEmpty(); }
+}
+
+function render() {
+  const container = document.getElementById('downloads-container');
+  if (!_downloads.length) { renderEmpty(); return; }
+
+  const active   = _downloads.filter(d => d.state === 'progressing');
+  const recent   = _downloads.filter(d => d.state !== 'progressing');
+
+  container.innerHTML = '';
+
+  if (active.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'Downloading';
+    container.appendChild(label);
+    active.forEach(d => container.appendChild(createCard(d)));
+  }
+
+  if (recent.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'Recent';
+    container.appendChild(label);
+    recent.forEach(d => container.appendChild(createCard(d)));
+  }
+}
+
+function createCard(dl) {
+  const card = document.createElement('div');
+  const isActive = dl.state === 'progressing';
+  card.className = 'download-card' + (isActive ? ' downloading' : '');
+  card.id = 'dl-' + dl.id;
+
+  const iconEl = document.createElement('div');
+  iconEl.className = 'file-icon ' + getIconClass(dl.filename || dl.url || '');
+  iconEl.innerHTML = getIconSVG(dl.filename || dl.url || '');
+
+  const info = document.createElement('div');
+  info.className = 'download-info';
+
+  const name = document.createElement('div');
+  name.className = 'download-name';
+  name.textContent = getFilename(dl.filename || dl.url || 'Unknown File');
+  if (!isActive && dl.state === 'completed') {
+    name.addEventListener('click', () => bb.downloads.openFile(dl.id));
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'download-meta';
+
+  const size = formatBytes(dl.receivedBytes || dl.totalBytes || 0);
+  const total = formatBytes(dl.totalBytes || 0);
+  const state = dl.state === 'completed' ? 'completed' : dl.state === 'progressing' ? 'downloading' : dl.state === 'cancelled' ? 'cancelled' : 'error';
+
+  meta.innerHTML = `
+    <span class="status-badge ${state}">${state === 'downloading' ? 'Downloading' : state.charAt(0).toUpperCase() + state.slice(1)}</span>
+    ${dl.totalBytes ? `<span class="dot">·</span><span>${isActive ? size + ' / ' + total : total}</span>` : ''}
+  `;
+
+  info.appendChild(name);
+  info.appendChild(meta);
+
+  if (isActive && dl.totalBytes) {
+    const progressWrap = document.createElement('div');
+    progressWrap.className = 'progress-wrap';
+    const pct = Math.round((dl.receivedBytes / dl.totalBytes) * 100);
+    progressWrap.innerHTML = `
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-text"><span>${pct}%</span><span>${formatSpeed(dl.speed || 0)}</span></div>
+    `;
+    info.appendChild(progressWrap);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'download-actions';
+
+  if (isActive) {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'action-btn danger';
+    cancelBtn.setAttribute('aria-label', 'Cancel download');
+    cancelBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+    cancelBtn.addEventListener('click', () => bb.downloads.cancel(dl.id));
+    actions.appendChild(cancelBtn);
+  } else {
+    const openBtn = document.createElement('button');
+    openBtn.className = 'action-btn';
+    openBtn.setAttribute('aria-label', 'Open file');
+    openBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`;
+    openBtn.addEventListener('click', () => bb.downloads.openFile(dl.id));
+    actions.appendChild(openBtn);
+  }
+
+  card.appendChild(iconEl);
+  card.appendChild(info);
+  card.appendChild(actions);
+  return card;
+}
+
+function renderEmpty() {
+  document.getElementById('downloads-container').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg></div>
+      <div class="empty-title">No Downloads</div>
+      <div class="empty-desc">Files you download will appear here</div>
+    </div>
+  `;
+}
+
+async function openFolder() { await bb.downloads.openFolder(); }
+async function clearDownloads() {
+  if (!confirm('Clear all download history?')) return;
+  await bb.downloads.clear();
+  _downloads = [];
+  renderEmpty();
+}
+
+// Live updates from main process
+if (bb) {
+  bb.onDownloadStarted(dl => { _downloads.unshift(dl); render(); });
+  bb.onDownloadProgress(dl => {
+    const idx = _downloads.findIndex(d => d.id === dl.id);
+    if (idx >= 0) _downloads[idx] = dl;
+    const card = document.getElementById('dl-' + dl.id);
+    if (card) {
+      // Update progress inline
+      const fill = card.querySelector('.progress-fill');
+      const pct = dl.totalBytes ? Math.round((dl.receivedBytes / dl.totalBytes) * 100) : 0;
+      if (fill) fill.style.width = pct + '%';
+      const pctEl = card.querySelector('.progress-text span');
+      if (pctEl) pctEl.textContent = pct + '%';
+      const metaEl = card.querySelector('.download-meta');
+      if (metaEl) {
+        const sizeEl = metaEl.querySelectorAll('span')[1];
+        if (sizeEl) sizeEl.textContent = `${formatBytes(dl.receivedBytes)} / ${formatBytes(dl.totalBytes)}`;
+      }
+    }
+  });
+  bb.onDownloadCompleted(dl => { const idx = _downloads.findIndex(d => d.id === dl.id); if (idx >= 0) { _downloads[idx] = dl; render(); } });
+  bb.onDownloadCancelled(dl => { const idx = _downloads.findIndex(d => d.id === dl.id); if (idx >= 0) { _downloads[idx] = dl; render(); } });
+}
+
+function getFilename(s) { return s.split(/[/\\]/).pop() || s; }
+
+function getIconClass(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  if (['jpg','jpeg','png','gif','webp','svg','ico','bmp'].includes(ext)) return 'icon-image';
+  if (['mp4','mkv','avi','mov','webm','flv'].includes(ext)) return 'icon-video';
+  if (['mp3','wav','flac','aac','ogg'].includes(ext)) return 'icon-audio';
+  if (['zip','rar','7z','tar','gz','bz2'].includes(ext)) return 'icon-archive';
+  if (['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','md'].includes(ext)) return 'icon-doc';
+  if (['js','ts','html','css','py','java','cpp','c','json','xml','sh'].includes(ext)) return 'icon-code';
+  return 'icon-default';
+}
+
+function getIconSVG(filename) {
+  const cls = getIconClass(filename);
+  const icons = {
+    'icon-image':   '<path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>',
+    'icon-video':   '<path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>',
+    'icon-audio':   '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>',
+    'icon-archive': '<path d="M20 6h-2.18c.07-.44.18-.88.18-1.35C18 2.53 15.47 0 12.35 0c-1.72 0-3.27.73-4.37 1.88L6 4H2C.9 4 0 4.9 0 6v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 10.5V19h-2v-2.5l-1.5-1.5L10 13.5V11h4v2.5l1.5 1.5L12 16.5z"/>',
+    'icon-doc':     '<path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM16 18H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>',
+    'icon-code':    '<path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>',
+    'icon-default': '<path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>',
+  };
+  return `<svg viewBox="0 0 24 24">${icons[cls] || icons['icon-default']}</svg>`;
+}
+
+function formatBytes(b) {
+  if (!b) return '0 B';
+  const k = 1024, s = ['B','KB','MB','GB'];
+  const i = Math.floor(Math.log(b) / Math.log(k));
+  return (b / Math.pow(k, i)).toFixed(1) + ' ' + s[i];
+}
+
+function formatSpeed(b) {
+  if (!b) return '';
+  return formatBytes(b) + '/s';
+}
+
+async function applyTheme() {
+  if (!bb) return;
+  try {
+    const s = await bb.settings.get();
+    let theme = s.theme || 'dark';
+    if (theme === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+  } catch {}
+}
+
+applyTheme().then(loadDownloads);
+</script>
+</body>
+</html>

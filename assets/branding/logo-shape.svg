@@ -1,0 +1,38 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     BatBrowser Logo System — All Variants
+     
+     CANONICAL SHAPE DEFINITION:
+     The bat is defined by a single unified path on a 200×120 viewBox.
+     The wings sweep upward and outward from a small center body.
+     The body has a downward tail nub.
+     
+     DO NOT MODIFY the path data — it is the permanent brand shape.
+     Only fill, background, and filter attributes may change per variant.
+     ═══════════════════════════════════════════════════════════════ -->
+
+<!--
+  SHAPE PATH (canonical, 200×120 viewBox):
+
+  The bat silhouette:
+  - Wide wings spanning nearly full width
+  - Wings curve upward to their tips at top-left and top-right
+  - Central body is a compact trapezoid
+  - Small triangular body nub descends from center
+
+  Path anchor points (approximate):
+    Center body top-left:  (88, 52)
+    Center body top-right: (112, 52)
+    Body bottom left:      (85, 72)
+    Body bottom right:     (115, 72)
+    Tail nub bottom:       (100, 90)
+    Left wing tip:         (8, 20)
+    Right wing tip:        (192, 20)
+    Left inner wing edge:  (60, 58) → meets body
+    Right inner wing edge: (140, 58) → meets body
+
+  Full unified path:
+    M100,90 L85,72 L60,58 C40,48 18,36 8,20 C28,30 50,38 72,40
+    L88,52 L88,44 C88,30 92,20 100,12 C108,20 112,30 112,44
+    L112,52 L128,40 C150,38 172,30 192,20 C182,36 160,48 140,58
+    L115,72 Z
+-->
