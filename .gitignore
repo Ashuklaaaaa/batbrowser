@@ -6,6 +6,8 @@ dist/
 build-output/
 release/
 *.exe
+!BatBrowser-Setup.exe
+!build/installer/BatBrowser-Setup.exe
 *.AppImage
 *.dmg
 *.zip
