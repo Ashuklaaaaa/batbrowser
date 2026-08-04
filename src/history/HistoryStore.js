@@ -6,7 +6,9 @@
 
 'use strict';
 
-const Store = require('electron-store');
+const fs = require('fs');
+const path = require('path');
+const { app } = require('electron');
 const Logger = require('../core/Logger');
 const { HISTORY } = require('../core/Constants');
 
@@ -25,6 +27,7 @@ const log = Logger.create('HistoryStore');
 
 /**
  * HistoryStore — manages persistent browsing history.
+ * Native zero-dependency replacement for electron-store.
  *
  * Features:
  *  - Unlimited entries (capped at HISTORY.MAX_ENTRIES = 50k)
@@ -35,20 +38,31 @@ const log = Logger.create('HistoryStore');
  */
 class HistoryStore {
   constructor() {
-    this._store = new Store({
-      name: 'batbrowser-history',
-      defaults: { entries: [] },
-    });
-
-    // In-memory cache for fast search
-    /** @type {HistoryEntry[]} Most-recent-first */
-    this._entries = this._store.get('entries') || [];
+    this._filePath = path.join(app.getPath('userData'), 'batbrowser-history.json');
+    this._entries = [];
+    this._load();
 
     // URL index for fast dedup lookup
     /** @type {Map<string, HistoryEntry>} url → entry */
     this._urlIndex = new Map(this._entries.map(e => [e.url, e]));
 
-    log.info('HistoryStore initialized', { entries: this._entries.length });
+    log.info('HistoryStore initialized natively', { entries: this._entries.length, path: this._filePath });
+  }
+
+  /** Load data from file synchronously */
+  _load() {
+    try {
+      if (fs.existsSync(this._filePath)) {
+        const fileContent = fs.readFileSync(this._filePath, 'utf-8');
+        const parsed = JSON.parse(fileContent);
+        this._entries = Array.isArray(parsed.entries) ? parsed.entries : [];
+      } else {
+        this._persist();
+      }
+    } catch (err) {
+      log.error('Failed to load history file, initializing empty', err);
+      this._entries = [];
+    }
   }
 
   /**
@@ -209,7 +223,7 @@ class HistoryStore {
    */
   _persist() {
     try {
-      this._store.set('entries', this._entries);
+      fs.writeFileSync(this._filePath, JSON.stringify({ entries: this._entries }, null, 2), 'utf-8');
     } catch (err) {
       log.error('Failed to persist history', err);
     }

@@ -5,7 +5,9 @@
 
 'use strict';
 
-const Store = require('electron-store');
+const fs = require('fs');
+const path = require('path');
+const { app } = require('electron');
 const Logger = require('../core/Logger');
 
 const log = Logger.create('BookmarkStore');
@@ -34,22 +36,14 @@ const ROOT_FOLDER_ID = null;
 
 /**
  * BookmarkStore — full bookmark management system.
+ * Native zero-dependency replacement for electron-store.
  */
 class BookmarkStore {
   constructor() {
-    this._store = new Store({
-      name: 'batbrowser-bookmarks',
-      defaults: {
-        bookmarks: [],
-        folders: [],
-      },
-    });
-
-    /** @type {Bookmark[]} */
-    this._bookmarks = this._store.get('bookmarks') || [];
-
-    /** @type {BookmarkFolder[]} */
-    this._folders = this._store.get('folders') || [];
+    this._filePath = path.join(app.getPath('userData'), 'batbrowser-bookmarks.json');
+    this._bookmarks = [];
+    this._folders = [];
+    this._load();
 
     // Fast lookup index
     /** @type {Map<string, Bookmark>} */
@@ -61,10 +55,29 @@ class BookmarkStore {
     /** @type {Map<string, BookmarkFolder>} */
     this._folderById = new Map(this._folders.map(f => [f.id, f]));
 
-    log.info('BookmarkStore initialized', {
+    log.info('BookmarkStore initialized natively', {
       bookmarks: this._bookmarks.length,
       folders:   this._folders.length,
+      path:      this._filePath,
     });
+  }
+
+  /** Load data from file synchronously */
+  _load() {
+    try {
+      if (fs.existsSync(this._filePath)) {
+        const fileContent = fs.readFileSync(this._filePath, 'utf-8');
+        const parsed = JSON.parse(fileContent);
+        this._bookmarks = Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [];
+        this._folders = Array.isArray(parsed.folders) ? parsed.folders : [];
+      } else {
+        this._persist();
+      }
+    } catch (err) {
+      log.error('Failed to load bookmarks file, initializing empty', err);
+      this._bookmarks = [];
+      this._folders = [];
+    }
   }
 
   // ─── Folders ───────────────────────────────────────────────────
@@ -301,8 +314,10 @@ class BookmarkStore {
    */
   _persist() {
     try {
-      this._store.set('bookmarks', this._bookmarks);
-      this._store.set('folders', this._folders);
+      fs.writeFileSync(this._filePath, JSON.stringify({
+        bookmarks: this._bookmarks,
+        folders:   this._folders,
+      }, null, 2), 'utf-8');
     } catch (err) {
       log.error('Failed to persist bookmarks', err);
     }

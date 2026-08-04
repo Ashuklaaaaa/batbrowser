@@ -1,11 +1,14 @@
 // ═══════════════════════════════════════════════════════════════
 // BatBrowser — Settings Store
 // Schema-validated persistent settings with defaults and migrations.
+// Zero-dependency native implementation (no electron-store).
 // ═══════════════════════════════════════════════════════════════
 
 'use strict';
 
-const Store = require('electron-store');
+const fs = require('fs');
+const path = require('path');
+const { app } = require('electron');
 const Logger = require('../core/Logger');
 
 const log = Logger.create('SettingsStore');
@@ -85,17 +88,40 @@ const MIGRATIONS = {
 
 /**
  * SettingsStore — manages all user preferences.
- * Wraps electron-store with schema validation and migration support.
+ * Native zero-dependency replacement for electron-store.
  */
 class SettingsStore {
   constructor() {
-    this._store = new Store({
-      name: 'batbrowser-settings',
-      defaults: DEFAULTS,
-    });
-
+    this._filePath = path.join(app.getPath('userData'), 'batbrowser-settings.json');
+    this._data = { ...DEFAULTS };
+    this._load();
     this._migrate();
-    log.info('SettingsStore initialized', { version: SCHEMA_VERSION });
+    log.info('SettingsStore initialized natively', { version: SCHEMA_VERSION, path: this._filePath });
+  }
+
+  /** Load data from file synchronously */
+  _load() {
+    try {
+      if (fs.existsSync(this._filePath)) {
+        const fileContent = fs.readFileSync(this._filePath, 'utf-8');
+        const parsed = JSON.parse(fileContent);
+        this._data = { ...DEFAULTS, ...parsed }; // Merge with defaults
+      } else {
+        this._save(); // Create initial file
+      }
+    } catch (err) {
+      log.error('Failed to load settings file, reverting to defaults', err);
+      this._data = { ...DEFAULTS };
+    }
+  }
+
+  /** Save data to file synchronously */
+  _save() {
+    try {
+      fs.writeFileSync(this._filePath, JSON.stringify(this._data, null, 2), 'utf-8');
+    } catch (err) {
+      log.error('Failed to save settings file', err);
+    }
   }
 
   /**
@@ -103,10 +129,10 @@ class SettingsStore {
    * @private
    */
   _migrate() {
-    const storedVersion = this._store.get('_version', 1);
+    const storedVersion = this._data._version || 1;
     if (storedVersion < SCHEMA_VERSION) {
       log.info(`Migrating settings from v${storedVersion} to v${SCHEMA_VERSION}`);
-      let data = this._store.store;
+      let data = { ...this._data };
       for (let v = storedVersion; v < SCHEMA_VERSION; v++) {
         if (MIGRATIONS[v]) {
           data = MIGRATIONS[v](data);
@@ -114,7 +140,8 @@ class SettingsStore {
         }
       }
       data._version = SCHEMA_VERSION;
-      this._store.store = data;
+      this._data = data;
+      this._save();
     }
   }
 
@@ -123,7 +150,7 @@ class SettingsStore {
    * @returns {object}
    */
   getAll() {
-    const all = { ...this._store.store };
+    const all = { ...this._data };
     delete all._version; // Don't expose internal version to renderer
     return all;
   }
@@ -134,7 +161,10 @@ class SettingsStore {
    * @returns {any}
    */
   get(key) {
-    return this._store.get(key, DEFAULTS[key]);
+    if (this._data.hasOwnProperty(key)) {
+      return this._data[key];
+    }
+    return DEFAULTS[key];
   }
 
   /**
@@ -147,8 +177,9 @@ class SettingsStore {
       log.warn(`Attempted to set unknown setting: ${key}`);
       return;
     }
-    const oldValue = this._store.get(key);
-    this._store.set(key, value);
+    const oldValue = this._data[key];
+    this._data[key] = value;
+    this._save();
     log.debug(`Setting changed: ${key}`, { from: oldValue, to: value });
   }
 
@@ -156,8 +187,8 @@ class SettingsStore {
    * Resets all settings to their defaults.
    */
   reset() {
-    this._store.clear();
-    this._store.set({ ...DEFAULTS });
+    this._data = { ...DEFAULTS };
+    this._save();
     log.info('Settings reset to defaults');
   }
 
@@ -167,7 +198,8 @@ class SettingsStore {
    */
   resetKey(key) {
     if (key in DEFAULTS) {
-      this._store.set(key, DEFAULTS[key]);
+      this._data[key] = DEFAULTS[key];
+      this._save();
     }
   }
 }
