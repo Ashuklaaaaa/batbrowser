@@ -8,12 +8,12 @@ release/
 *.exe
 !BatBrowser-Setup.exe
 !build/installer/BatBrowser-Setup.exe
+electron-bin/
 *.AppImage
 *.dmg
 *.zip
 
 # Local dev binaries & temporary logs
-electron-bin/
 *.log
 log.txt
 launch.log

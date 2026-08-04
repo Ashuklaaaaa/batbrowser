@@ -136,7 +136,7 @@ namespace BatBrowserInstaller {
                 }
 
                 string sourceDir = AppDomain.CurrentDomain.BaseDirectory;
-                string[] dirsToCopy = new string[] { "src", "ui", "preload", "assets", "resources", "electron-bin" };
+                string[] dirsToCopy = new string[] { "src", "ui", "preload", "assets", "resources", "scripts" };
                 string[] filesToCopy = new string[] { "main.js", "package.json", "Start-BatBrowser.bat" };
 
                 int totalItems = dirsToCopy.Length + filesToCopy.Length;
