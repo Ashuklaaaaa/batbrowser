@@ -10,6 +10,8 @@
 ---
 
 ## 📸 Screenshots
+<img width="1920" height="1021" alt="image" src="https://github.com/user-attachments/assets/105b668b-de71-4453-91fb-4b2c9b3d77ba" />  <img width="960" height="504" alt="image" src="https://github.com/user-attachments/assets/f6b0f02b-34ce-4536-8e50-b1c10c37ac96" />
+
 
 | Top Chrome & Tab Rail | Settings Panel | History Manager |
 |---|---|---|
