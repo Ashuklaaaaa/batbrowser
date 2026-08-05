@@ -19,7 +19,7 @@ const { getInstance: getSettings }  = require('./src/settings/SettingsStore');
 const { getInstance: getHistory }   = require('./src/history/HistoryStore');
 const { getInstance: getBookmarks } = require('./src/bookmarks/BookmarkStore');
 const { getInstance: getDownloads } = require('./src/downloads/DownloadManager');
-const { getInstance: getAdBlock }   = require('./src/adblock/AdBlocker');
+
 const PermissionHandler = require('./src/security/PermissionHandler');
 const { getContentBounds } = require('./src/windows/Geometry');
 
@@ -47,7 +47,7 @@ const settingsStore  = getSettings();
 const historyStore   = getHistory();
 const bookmarkStore  = getBookmarks();
 const downloadManager = getDownloads();
-const adBlocker      = getAdBlock();
+
 
 // ─── Main Window & Tabs ───────────────────────────────────────────
 
@@ -72,8 +72,6 @@ function setupSession(ses) {
     callback({ requestHeaders: details.requestHeaders });
   });
 
-  // Ad blocking
-  adBlocker.setup(ses);
 
   // Permissions
   PermissionHandler.setup(ses, () => settingsStore.getAll());
@@ -127,8 +125,8 @@ function createMainWindow() {
   // ── TabManager ──────────────────────────────────────────────────
   tabManager = new TabManager(mainWindow, broadcast, settingsStore);
 
-  // ── Wire all services to downloads and adblock ──────────────────
-  adBlocker.attachWindow(mainWindow);
+  // ── Wire all services to downloads ──────────────────
+
   downloadManager.attachWindow(mainWindow);
   downloadManager.setup(session.defaultSession);
 
@@ -139,7 +137,6 @@ function createMainWindow() {
     bookmarks: bookmarkStore,
     settings:  settingsStore,
     downloads: downloadManager,
-    adblock:   adBlocker,
     win:       mainWindow,
   });
 
@@ -489,17 +486,7 @@ app.on('before-quit', () => {
   log.info('Shutting down BatBrowser');
   _saveSession();
 
-  // Persist cumulative adblock stats
-  try {
-    const currentStats = adBlocker.getStats();
-    const stored = settingsStore._store.get('cumulativeAdBlockStats', { ads: 0, trackers: 0 });
-    settingsStore._store.set('cumulativeAdBlockStats', {
-      ads:      stored.ads      + currentStats.ads,
-      trackers: stored.trackers + currentStats.trackers,
-    });
-  } catch (err) {
-    log.error('Failed to save adblock stats', err);
-  }
+
 });
 
 // Handle certificate errors globally — show error page, never silently bypass

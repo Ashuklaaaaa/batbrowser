@@ -41,7 +41,6 @@ const DEFAULTS = {
   fontScale:           1.0,          // 0.8 | 0.9 | 1.0 | 1.1 | 1.2
 
   // ── Privacy ───────────────────────────────────────────────────
-  adBlockEnabled:      true,
   forceDarkMode:       false,
   doNotTrack:          true,
   globalPrivacyControl: true,
@@ -61,8 +60,9 @@ const DEFAULTS = {
 // Key: from version, Value: migration function
 const MIGRATIONS = {
   1: (data) => {
-    // v1 → v2: rename adBlockStats to be stored separately
+    // v1 → v2: remove adblock fields
     delete data.adBlockStats;
+    delete data.adBlockEnabled;
     data.restoreSessionOnStart = true;
     data.showTabPreviews = true;
     data.hardwareAcceleration = true;

@@ -123,11 +123,6 @@ contextBridge.exposeInMainWorld('batBrowser', {
     clear:          ()             => invoke('downloads:clear'),
   },
 
-  // ─── Ad Blocking ─────────────────────────────────────────────
-  adblock: {
-    getStats:       ()             => invoke('adblock:get-stats'),
-    toggle:         (enabled)      => invoke('adblock:toggle', enabled),
-  },
 
   // ─── Developer Tools ─────────────────────────────────────────
   tools: {
@@ -207,8 +202,6 @@ contextBridge.exposeInMainWorld('batBrowser', {
   /** @param {Function} cb - Called with tabId, isAudible */
   onTabAudioChanged:      (cb) => on('tab:audio-changed', cb),
 
-  /** @param {Function} cb - Called with { ads, trackers } */
-  onAdBlockStats:         (cb) => on('adblock:stats-updated', cb),
 
   /** @param {Function} cb - Called with downloadInfo */
   onDownloadStarted:      (cb) => on('download:started', cb),

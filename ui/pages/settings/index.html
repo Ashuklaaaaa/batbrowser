@@ -538,16 +538,6 @@
       <div class="card">
         <div class="setting-row">
           <div class="setting-info">
-            <div class="setting-label">Ad & Tracker Blocking</div>
-            <div class="setting-detail">Block ads and trackers network-wide</div>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="toggle-adblock" onchange="saveSetting('adBlockEnabled', this.checked)" aria-label="Ad blocking">
-            <div class="toggle-track"><div class="toggle-thumb"></div></div>
-          </label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
             <div class="setting-label">Send "Do Not Track"</div>
             <div class="setting-detail">Request sites not track you (honored by few sites)</div>
           </div>
@@ -786,7 +776,7 @@ function applySettingsToUI() {
   const toggles = {
     'toggle-compact': s.compactMode, 'toggle-bookmarks-bar': s.showBookmarksBar,
     'toggle-restore': s.restoreSessionOnStart, 'toggle-hw-accel': s.hardwareAcceleration,
-    'toggle-adblock': s.adBlockEnabled, 'toggle-dnt': s.doNotTrack,
+    'toggle-dnt': s.doNotTrack,
     'toggle-gpc': s.globalPrivacyControl, 'toggle-3p-cookies': s.blockThirdPartyCookies,
     'toggle-ask-save': s.askWhereToSave, 'toggle-tab-previews': s.showTabPreviews,
     'toggle-notif': s.enableNotifications, 'toggle-geo': s.enableGeolocation,

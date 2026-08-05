@@ -54,7 +54,6 @@ const els = {
   railDownloads: $('#rail-downloads'),
   railShield:    $('#rail-shield'),
   railSettings:  $('#rail-settings'),
-  adblockRailBadge: $('#adblock-rail-badge'),
 
   // Sidebar panel
   sidebarPanel:  $('#sidebar-panel'),
@@ -88,8 +87,6 @@ const els = {
 
 // Backward-compat aliases so older code paths keep working
 els.sidebar = els.sidebarPanel;        // sidebar.classList.toggle('open')
-els.adblockBtn = els.railShield;       // adblockBtn.querySelector('button') → handle below
-els.adblockBadge = els.adblockRailBadge;
 els.downloadsBtn = els.railDownloads;
 
 // ─── App State ────────────────────────────────────────────────────
@@ -98,8 +95,6 @@ const state = {
   activeTabId:    null,
   tabs:           new Map(),   // id → tab data
   groups:         new Map(),   // id → group data
-  adBlockEnabled: true,
-  adBlockStats:   { ads: 0, trackers: 0 },
   zoomLevel:      100,
   sidebarOpen:    false,
   currentBookmarks: [],
@@ -811,17 +806,9 @@ onCleanup(bb.onBookmarkToggleCurrent(() => {
   els.bookmarkBtn.click();
 }));
 
-// ─── Ad Block / Shield ────────────────────────────────────────────
-
-bb.adblock.getStats().then(stats => {
-  if (stats) updateAdBlockStats(stats);
-});
 
 bb.settings.get().then(settings => {
   if (settings) {
-    state.adBlockEnabled = settings.adBlockEnabled !== false;
-    updateAdBlockUI();
-
     // Apply saved theme
     let theme = settings.theme || 'dark';
     if (theme === 'system') {
@@ -833,34 +820,6 @@ bb.settings.get().then(settings => {
     }
   }
 });
-
-function updateAdBlockStats(stats) {
-  state.adBlockStats = stats;
-  const total = stats.ads + stats.trackers;
-  if (total > 0 && els.adblockRailBadge) {
-    els.adblockRailBadge.textContent = total > 999 ? '999+' : String(total);
-  }
-}
-
-function updateAdBlockUI() {
-  if (els.railShield) {
-    els.railShield.style.color = state.adBlockEnabled ? 'var(--accent)' : 'var(--text-muted)';
-    els.railShield.title = state.adBlockEnabled ? 'Ad Blocker: ON' : 'Ad Blocker: OFF';
-  }
-}
-
-if (els.railShield) {
-  els.railShield.addEventListener('click', async () => {
-    state.adBlockEnabled = !state.adBlockEnabled;
-    await bb.adblock.toggle(state.adBlockEnabled);
-    updateAdBlockUI();
-    showToast(`Ad Blocker ${state.adBlockEnabled ? 'enabled' : 'disabled'}`);
-  });
-}
-
-onCleanup(bb.onAdBlockStats((stats) => {
-  updateAdBlockStats(stats);
-}));
 
 // ─── Zoom Indicator ───────────────────────────────────────────────
 
@@ -1132,7 +1091,6 @@ const commands = [
   { type: 'command', title: 'Reset Zoom',        sub: 'Ctrl+0', icon: 'zoom', action: () => bb.zoom.reset() },
   { type: 'command', title: 'Clear History',     sub: '', icon: 'history', action: async () => { await bb.history.clear(); showToast('History cleared'); } },
   { type: 'command', title: 'Clear Cache',       sub: '', icon: 'privacy', action: async () => { await bb.privacy.clearCache(); showToast('Cache cleared'); } },
-  { type: 'command', title: 'Toggle Ad Blocker', sub: '', icon: 'shield', action: () => els.adblockBtn.querySelector('button').click() },
   { type: 'command', title: 'Take Screenshot',   sub: '', icon: 'screenshot', action: async () => { const p = await bb.tools.screenshot(); if (p) showToast(`Saved: ${p}`, 'success'); } },
   { type: 'command', title: 'Print Page',         sub: 'Ctrl+P', icon: 'print', action: () => bb.tools.print() },
   { type: 'command', title: 'View Page Source',   sub: '', icon: 'source', action: () => bb.tools.viewSource() },

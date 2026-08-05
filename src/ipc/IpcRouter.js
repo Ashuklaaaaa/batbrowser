@@ -52,11 +52,11 @@ function safeOn(channel, fn) {
  * @param {import('../bookmarks/BookmarkStore').BookmarkStore} services.bookmarks
  * @param {import('../settings/SettingsStore').SettingsStore}  services.settings
  * @param {import('../downloads/DownloadManager').DownloadManager} services.downloads
- * @param {import('../adblock/AdBlocker').AdBlocker}       services.adblock
+
  * @param {Electron.BrowserWindow}                          services.win
  */
 function setup(services) {
-  const { tabs, history, bookmarks, settings, downloads, adblock, win } = services;
+  const { tabs, history, bookmarks, settings, downloads, win } = services;
 
   log.info('Setting up IPC handlers');
 
@@ -288,19 +288,6 @@ function setup(services) {
     return true;
   });
 
-  // ─── Ad Blocking ─────────────────────────────────────────────
-
-  safeHandle(IPC.ADBLOCK_GET_STATS, () => {
-    return adblock.getStats();
-  });
-
-  safeHandle(IPC.ADBLOCK_TOGGLE, (event, enabled) => {
-    V.assertBoolean(enabled, 'enabled');
-    adblock.setEnabled(enabled);
-    settings.set('adBlockEnabled', enabled);
-    return true;
-  });
-
   // ─── DevTools / Page Tools ───────────────────────────────────
 
   safeHandle(IPC.TOOLS_DEVTOOLS,   () => tabs.toggleDevTools());
@@ -444,12 +431,9 @@ function setup(services) {
  * @private
  */
 function _handleSettingsSideEffects(key, value, services) {
-  const { adblock, tabs } = services;
+  const { tabs } = services;
 
   switch (key) {
-    case 'adBlockEnabled':
-      adblock.setEnabled(value);
-      break;
 
     case 'sidebarOpen':
     case 'sidebarPosition':

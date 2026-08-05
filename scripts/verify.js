@@ -36,7 +36,6 @@ const requiredFiles = [
   'src/history/HistoryStore.js',
   'src/bookmarks/BookmarkStore.js',
   'src/downloads/DownloadManager.js',
-  'src/adblock/AdBlocker.js',
   'src/security/PermissionHandler.js',
   'src/windows/Geometry.js',
   'preload/browser.js',

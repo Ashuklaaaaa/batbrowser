@@ -11,7 +11,6 @@ BatBrowser/
 ├── resources/        # Default templates, licenses, translations
 ├── scripts/          # Build, clean, release, verify scripts
 ├── src/              # Main process backend modules
-│   ├── adblock/      # Ad & tracker blocker service
 │   ├── bookmarks/    # Bookmarks storage service
 │   ├── core/         # Constants & Logger foundation
 │   ├── downloads/    # Native download manager

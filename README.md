@@ -22,7 +22,7 @@
 ## ✨ Features
 
 - 🎨 **NOCTURNE Visual Identity:** Crafted with a curated teal palette (`#00D4B4`), glassmorphism, spring physics, and deep contrast.
-- 🛡️ **Network-Level Adblocker:** Native request interceptor with statistics counter.
+
 - 🔒 **Privacy First:** WebRTC IP leakage prevention, GPC (Global Privacy Control), Do Not Track headers, and cookie isolation.
 - ⚡ **High Performance:** Memory-efficient tab sleeping after inactivity and debounced IPC communication.
 - 📑 **Tab Experience:** Context menus (Pin, Mute, Duplicate, Close Others), smooth width collapse animations, and sleeping tab state indicators.
@@ -43,7 +43,7 @@ BatBrowser/
 ├── resources/        # Default application data templates & licenses
 ├── scripts/          # Workspace verification, clean, release, version scripts
 ├── src/              # Main Process JavaScript backend modules
-│   ├── adblock/      # Request filtering & adblocker engine
+
 │   ├── bookmarks/    # Persistent bookmark store
 │   ├── core/         # Constants & Logger foundation
 │   ├── downloads/    # Native download manager

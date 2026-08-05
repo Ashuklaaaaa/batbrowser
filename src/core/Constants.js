@@ -120,12 +120,7 @@ const DOWNLOADS = {
   COMPLETED_RETENTION_MS: 24 * 60 * 60 * 1000, // 24h
 };
 
-// ─── Adblock ──────────────────────────────────────────────────────
 
-const ADBLOCK = {
-  /** Throttle delay for stats notifications to renderer */
-  STATS_NOTIFY_THROTTLE_MS: 500,
-};
 
 // ─── IPC Channel Names ────────────────────────────────────────────
 
@@ -159,10 +154,7 @@ const IPC = {
   NAV_STOP:              'nav:stop',
   NAV_HOME:              'nav:home',
 
-  // Adblock
-  ADBLOCK_GET_STATS:     'adblock:get-stats',
-  ADBLOCK_TOGGLE:        'adblock:toggle',
-  ADBLOCK_STATS_UPDATED: 'adblock:stats-updated',
+
 
   // History
   HISTORY_GET:           'history:get',
@@ -262,6 +254,6 @@ module.exports = {
   SECURITY,
   HISTORY,
   DOWNLOADS,
-  ADBLOCK,
+
   IPC,
 };

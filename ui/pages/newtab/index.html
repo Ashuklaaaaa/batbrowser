@@ -525,12 +525,6 @@
   <div class="stats-bar" id="stats-bar">
     <div class="stat">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4.9l5 2.22v3.88c0 3.65-2.37 6.74-5 7.78-2.63-1.04-5-4.13-5-7.78V7.12l5-2.22z"/>
-      </svg>
-      <span><span class="stat-value" id="ads-count">0</span> trackers blocked</span>
-    </div>
-    <div class="stat">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 15H11v-6h1.5v6zm0-8H11V7h1.5v2z"/>
       </svg>
       <span>Session: <span class="stat-value" id="session-time">just started</span></span>
@@ -625,18 +619,6 @@ if (bb) {
     }
   });
 
-  bb.adblock.getStats().then(stats => {
-    if (stats) updateAdStats(stats);
-  });
-
-  bb.onAdBlockStats(stats => {
-    if (stats) updateAdStats(stats);
-  });
-}
-
-function updateAdStats(stats) {
-  const total = (stats.ads || 0) + (stats.trackers || 0);
-  document.getElementById('ads-count').textContent = total.toLocaleString();
 }
 
 // ─── Search ──────────────────────────────────────────────────

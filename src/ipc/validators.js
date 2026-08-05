@@ -198,7 +198,7 @@ function validateBookmark(bookmark) {
 // ─── Settings Validators ─────────────────────────────────────────
 
 const VALID_SETTINGS_KEYS = new Set([
-  'searchEngine', 'adBlockEnabled', 'forceDarkMode', 'scrollSensitivity',
+  'searchEngine', 'forceDarkMode', 'scrollSensitivity',
   'theme', 'accentColor', 'sidebarOpen', 'sidebarPosition', 'showBookmarksBar',
   'restoreSessionOnStart', 'compactMode', 'showTabPreviews', 'language',
   'downloadPath', 'askWhereToSave', 'enableNotifications', 'enableGeolocation',
@@ -244,7 +244,6 @@ function validateSetting(key, value) {
       }
       break;
 
-    case 'adBlockEnabled':
     case 'forceDarkMode':
     case 'sidebarOpen':
     case 'showBookmarksBar':
